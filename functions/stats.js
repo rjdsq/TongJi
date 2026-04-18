@@ -79,7 +79,7 @@ export async function onRequest(context) {
         const conf = allConfigs[site] || { 
             tpl: 1, scale: 1, offsetX: 0, layout: 'row', 
             useCustom: false, colors: { box: 'transparent', item: '#f9f7f2', lbl: '#a5acaa', val: '#788583' },
-            padBox: 0.6, padItem: 0.6,
+            padBox: 0.6, padItemX: 0.8, padItemY: 0.6,
             order: ['pv', 'uv', 'dpv', 'duv'],
             pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', 
             shows: {pv:true, uv:true, dpv:true, duv:true} 
@@ -124,7 +124,8 @@ export async function onRequest(context) {
         const offsetX = conf.offsetX || 0;
         
         const pb = conf.padBox !== undefined ? conf.padBox : 0.6;
-        const pi = conf.padItem !== undefined ? conf.padItem : 0.6;
+        const px = conf.padItemX !== undefined ? conf.padItemX : 0.8;
+        const py = conf.padItemY !== undefined ? conf.padItemY : 0.6;
 
         const shows = conf.shows || {pv:true, uv:true, dpv:true, duv:true};
 
@@ -147,7 +148,7 @@ export async function onRequest(context) {
             for (let i = 0; i < orderArr.length; i++) {
                 const key = orderArr[i];
                 if (confShows[key]) {
-                    items.push(\`<div style="flex:${itemFlex}; min-width:50px; background:${t.bg}; padding:${pi}em ${pi*1.2}em; border-radius:${pi}em; border:1px solid ${t.border}; box-sizing:border-box; text-align:center;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${confNames[key]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">\${resData[key]}</div></div>\`);
+                    items.push(\`<div style="flex:${itemFlex}; min-width:50px; background:${t.bg}; padding:${py}em ${px}em; border-radius:${py}em; border:1px solid ${t.border}; box-sizing:border-box; text-align:center;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${confNames[key]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">\${resData[key]}</div></div>\`);
                 }
             }
 
