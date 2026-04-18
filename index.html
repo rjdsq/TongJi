@@ -14,6 +14,7 @@
         
         .header { background: var(--card); height: calc(54px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; border-bottom: 1px solid var(--border); position: relative; z-index: 20; }
         .header .btn-back { position: absolute; left: 16px; bottom: 0; height: 54px; display: flex; align-items: center; font-size: 15px; color: var(--primary); display: none; cursor: pointer; font-weight: 500; }
+        .header .btn-delete-top { position: absolute; right: 16px; bottom: 0; height: 54px; display: flex; align-items: center; font-size: 15px; color: var(--danger); display: none; cursor: pointer; font-weight: 500; }
         
         .view-container { position: relative; height: calc(100vh - 54px - env(safe-area-inset-top)); overflow: hidden; }
         .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
@@ -32,8 +33,7 @@
         .nav-item.active .nav-icon { filter: grayscale(0); opacity: 1; }
 
         .edit-nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 40; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
-        .edit-nav-item { flex: 1; text-align: center; font-size: 12px; color: var(--text-m); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 500; }
-        .edit-nav-item.danger { color: var(--danger); }
+        .edit-nav-item { flex: 1; text-align: center; font-size: 14px; color: var(--text-m); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 10px 0; }
         .edit-nav-item .icon { font-size: 20px; }
 
         .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border); }
@@ -61,7 +61,7 @@
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary); margin-top: -10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: var(--border); border-radius: 2px; }
         
-        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--bg); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
+        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--card); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
         .toggle-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-m); }
         input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-color: var(--primary); }
 
@@ -105,6 +105,7 @@
     <div class="header" id="header-bar" style="display:none;">
         <div class="btn-back" id="btn-back" onclick="handleBackBtn()">＜ 返回</div>
         <span id="sys-title">网站管理</span>
+        <div class="btn-delete-top" id="btn-delete-top" onclick="confirmDeleteFromEdit()">删除</div>
     </div>
 
     <div id="view-login" class="view">
@@ -172,12 +173,12 @@
                     </div>
                     
                     <div class="form-group" style="margin-bottom:16px;">
-                        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-l); margin-bottom:5px;"><span>左偏移</span><span>居中</span><span>右偏移</span></div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-l); margin-bottom:5px;"><span>左侧位移</span><span>居中</span><span>右侧位移</span></div>
                         <input type="range" id="e-offset" min="-50" max="50" step="1" value="0" oninput="updatePreview()">
                     </div>
                     
                     <div class="form-group" style="margin-bottom:16px;">
-                        <div style="font-size:12px; color:var(--text-l); margin-bottom:5px;">整体比例大小</div>
+                        <div style="font-size:12px; color:var(--text-l); margin-bottom:5px;">全局等比缩放</div>
                         <input type="range" id="e-scale" min="0.5" max="1" step="0.05" value="1" oninput="updatePreview()">
                     </div>
                     
@@ -187,25 +188,24 @@
                             <input type="range" id="e-pad-box" min="0" max="2" step="0.1" value="0.6" oninput="updatePreview()">
                         </div>
                         <div style="flex:1;">
-                            <div style="font-size:12px; color:var(--text-l); margin-bottom:5px;">左右内距</div>
+                            <div style="font-size:12px; color:var(--text-l); margin-bottom:5px;">小框左右距</div>
                             <input type="range" id="e-pad-item-x" min="0.1" max="2" step="0.1" value="0.8" oninput="updatePreview()">
                         </div>
                         <div style="flex:1;">
-                            <div style="font-size:12px; color:var(--text-l); margin-bottom:5px;">上下内距</div>
+                            <div style="font-size:12px; color:var(--text-l); margin-bottom:5px;">小框上下距</div>
                             <input type="range" id="e-pad-item-y" min="0.1" max="2" step="0.1" value="0.6" oninput="updatePreview()">
                         </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-header">数据排序与文案</div>
-                    <div style="font-size:12px; color:var(--text-l); margin-bottom:12px;">勾选显隐，点击文字修改，右侧调整顺序</div>
-                    <div class="sort-list" id="sort-list"></div>
-                </div>
+                    <div class="card-header">色彩方案</div>
+                    <div class="form-group toggle-item" style="margin-bottom:15px;">
+                        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="e-use-custom" onchange="updatePreview()"> 启用自定义提取色</label>
+                    </div>
 
-                <div class="card">
-                    <div class="card-header">色彩定制</div>
-                    <div class="form-group">
+                    <div id="tpl-select-container" class="form-group">
+                        <div class="label" style="font-size:12px; color:var(--text-l);">预设模板库</div>
                         <select id="e-tpl-select" class="native-select" onchange="updatePreview()">
                             <option value="1">燕麦暖色</option>
                             <option value="2">纯白经典</option>
@@ -228,10 +228,6 @@
                             <option value="19">珊瑚橘暖</option>
                             <option value="20">极致极简</option>
                         </select>
-                    </div>
-
-                    <div class="form-group toggle-item" style="margin-bottom:15px; border-top:1px dashed var(--border); padding-top:15px;">
-                        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="e-use-custom" onchange="updatePreview()"> 自定义配色 (覆盖上方模板)</label>
                     </div>
 
                     <div id="custom-color-panel" style="display:none; flex-direction:column; gap:8px;">
@@ -278,9 +274,14 @@
                     </div>
                 </div>
 
+                <div class="card">
+                    <div class="card-header">文案、排序与显隐</div>
+                    <div style="font-size:12px; color:var(--text-l); margin-bottom:12px;">直接点击文字修改，右侧调整顺序</div>
+                    <div class="sort-list" id="sort-list"></div>
+                </div>
+                
                 <div style="display:none;">
                     <input type="text" id="e-v-pv"><input type="text" id="e-v-uv"><input type="text" id="e-v-dpv"><input type="text" id="e-v-duv">
-                    <input type="checkbox" id="e-t-pv"><input type="checkbox" id="e-t-uv"><input type="checkbox" id="e-t-dpv"><input type="checkbox" id="e-t-duv">
                 </div>
             </div>
         </div>
@@ -294,9 +295,8 @@
     </div>
     
     <div class="edit-nav-bar" id="edit-nav-bar" style="display:none;">
-        <div class="edit-nav-item" onclick="promptSave()" id="btn-save-edit" style="opacity:0.5; pointer-events:none;"><span class="icon">💾</span>保存修改</div>
-        <div class="edit-nav-item" onclick="genLinkFromEdit()"><span class="icon">🔗</span>获取代码</div>
-        <div class="edit-nav-item danger" onclick="confirmDeleteFromEdit()"><span class="icon">🗑️</span>删除网站</div>
+        <div class="edit-nav-item" style="color:var(--text-m);" onclick="genLinkFromEdit()"><span class="icon">🔗</span>获取代码</div>
+        <div class="edit-nav-item" style="border-left:1px solid var(--border);" onclick="promptSave()" id="btn-save-edit"><span class="icon">💾</span>保存修改</div>
     </div>
 
     <div class="modal-overlay" id="overlay">
@@ -488,7 +488,7 @@
                 const card = document.createElement('div');
                 card.className = 'site-card';
                 card.onclick = function() { openEdit(site); };
-                card.innerHTML = `<div><div class="site-domain" style="margin-bottom:0;">${site}</div><div class="site-alias">${cName !== site ? '已存: '+cName : ''}</div></div><div style="color:var(--primary); font-size:20px; font-weight:bold;">›</div>`;
+                card.innerHTML = `<div><div class="site-domain" style="margin-bottom:0;">${cName}</div></div><div style="color:var(--primary); font-size:20px; font-weight:bold;">›</div>`;
                 list.appendChild(card);
             }
             if (Object.keys(configs).length === 0) list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:50px; line-height:1.8;">还没有添加网站<br>点击右下角按钮添加</div>';
@@ -521,13 +521,13 @@
         }
 
         function showAddSiteModal() {
-            openModal('添加网站', `<input type="text" id="new-site-input" placeholder="输入名称" style="margin-top:10px; width:100%; height:48px; border:1px solid var(--border); border-radius:12px; padding:0 16px; outline:none;">`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="confirmAddSite()">确认</button>`);
+            openModal('添加配置', `<input type="text" id="new-site-input" placeholder="输入任意名称标识" style="margin-top:10px; width:100%; height:48px; border:1px solid var(--border); border-radius:12px; padding:0 16px; outline:none;">`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="confirmAddSite()">确认</button>`);
             setTimeout(() => document.getElementById('new-site-input')?.focus(), 300);
         }
 
         async function confirmAddSite() {
             const site = document.getElementById('new-site-input').value.trim();
-            if (!site || configs[site]) return showToast('无效或重复');
+            if (!site || configs[site]) return showToast('名称无效或已存在');
             closeModal();
             showToast('添加中...');
             configs[site] = { 
@@ -552,7 +552,8 @@
             list.innerHTML = '';
             currentOrder.forEach((k, idx) => {
                 const isChecked = document.getElementById(`e-t-${k}`).checked;
-                const val = document.getElementById(`e-v-${k}`).value;
+                const vNode = document.getElementById(`e-v-${k}`);
+                const val = vNode ? vNode.value : keyMap[k];
                 list.innerHTML += `
                 <div class="sort-item" style="opacity:${isChecked?1:0.5};">
                     <label style="display:flex; align-items:center; gap:4px;" for="ls-t-${k}">
@@ -589,6 +590,7 @@
         function updatePreview() {
             const useCustom = document.getElementById('e-use-custom').checked;
             document.getElementById('custom-color-panel').style.display = useCustom ? 'flex' : 'none';
+            document.getElementById('tpl-select-container').style.display = useCustom ? 'none' : 'block';
             
             let t;
             if (useCustom) {
@@ -659,9 +661,9 @@
             
             const btn = document.getElementById('btn-save-edit');
             if (JSON.stringify(currObj) !== currentOriginalConfigStr) {
-                btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.style.color = 'var(--primary)';
             } else {
-                btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; btn.style.color = 'var(--text-m)';
             }
         }
 
@@ -673,6 +675,13 @@
                 currentOrder = Array.isArray(c.order) ? [...c.order] : ['pv','uv','dpv','duv'];
                 const shows = c.shows || {pv:true, uv:true, dpv:true, duv:true};
                 
+                if(!document.getElementById('e-t-pv')) {
+                    const hiddenDiv = document.createElement('div');
+                    hiddenDiv.style.display = 'none';
+                    hiddenDiv.innerHTML = `<input type="checkbox" id="e-t-pv"><input type="checkbox" id="e-t-uv"><input type="checkbox" id="e-t-dpv"><input type="checkbox" id="e-t-duv"><input type="text" id="e-v-pv"><input type="text" id="e-v-uv"><input type="text" id="e-v-dpv"><input type="text" id="e-v-duv">`;
+                    document.body.appendChild(hiddenDiv);
+                }
+
                 document.getElementById('e-t-pv').checked = !!shows.pv;
                 document.getElementById('e-t-uv').checked = !!shows.uv;
                 document.getElementById('e-t-dpv').checked = !!shows.dpv;
@@ -687,7 +696,7 @@
                 
                 document.getElementById('e-use-custom').checked = !!c.useCustom;
                 const colors = c.colors || { box: 'transparent', item: '#f9f7f2', lbl: '#a5acaa', val: '#788583' };
-                document.getElementById('c-box').value = colors.box;
+                document.getElementById('c-box').value = colors.box !== 'transparent' ? colors.box : 'transparent';
                 document.getElementById('c-item').value = colors.item;
                 document.getElementById('c-lbl').value = colors.lbl;
                 document.getElementById('c-val').value = colors.val;
@@ -723,13 +732,14 @@
                 currentOriginalConfigStr = JSON.stringify(currObj);
                 checkChanges();
 
+                document.getElementById('sys-title').innerText = c.configName || site;
                 document.getElementById('btn-back').style.display = 'flex';
+                document.getElementById('btn-delete-top').style.display = 'flex';
                 document.getElementById('fab-add').style.display = 'none';
                 document.getElementById('nav-bar').style.display = 'none';
                 document.getElementById('edit-nav-bar').style.display = 'flex';
                 document.getElementById('view-edit').classList.add('show');
                 isEditOpen = true;
-                try { history.pushState({view: 'edit'}, ''); } catch(e) {}
             } catch (e) {
                 showToast('读取配置失败');
             }
@@ -739,16 +749,19 @@
             const site = document.getElementById('e-site-id').value;
             const c = configs[site] || {};
             const cName = c.configName || site;
-            openModal('保存配置', `<div class="label" style="text-align:left;">为当前配置命名留存：</div><input type="text" id="save-config-name" value="${cName}" style="width:100%; height:48px; border:1px solid var(--border); border-radius:12px; padding:0 16px; outline:none; margin-bottom:10px;">`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="executeSave()">确认</button>`);
+            openModal('保存配置', `<div class="label" style="text-align:left;">配置别名 (修改名称将另存为新配置，原配置保留)：</div><input type="text" id="save-config-name" value="${cName}" style="width:100%; height:48px; border:1px solid var(--border); border-radius:12px; padding:0 16px; outline:none; margin-bottom:10px;">`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="executeSave()">确认</button>`);
         }
 
         async function executeSave() {
             const configName = document.getElementById('save-config-name').value.trim();
+            if (!configName) return showToast('名称不能为空');
             closeModal();
             const site = document.getElementById('e-site-id').value;
+            const targetSite = configName; 
+            
             const layoutNode = document.querySelector('input[name="e-layout"]:checked');
-            configs[site] = {
-                configName: configName || site,
+            configs[targetSite] = {
+                configName: configName,
                 tpl: parseInt(document.getElementById('e-tpl-select').value),
                 scale: parseFloat(document.getElementById('e-scale').value),
                 offsetX: parseInt(document.getElementById('e-offset').value),
@@ -772,8 +785,12 @@
             };
             
             showToast('保存中...');
-            await fetch('/stats?action=save_config', { method: 'POST', body: JSON.stringify({site: site, ...configs[site]}) });
-            currentOriginalConfigStr = JSON.stringify({ tpl: configs[site].tpl, scale: configs[site].scale, offsetX: configs[site].offsetX, padBox: configs[site].padBox, padItemX: configs[site].padItemX, padItemY: configs[site].padItemY, layout: configs[site].layout, useCustom: configs[site].useCustom, colors: configs[site].colors, order: configs[site].order, pv: configs[site].pv, uv: configs[site].uv, dpv: configs[site].dpv, duv: configs[site].duv, shows: configs[site].shows });
+            await fetch('/stats?action=save_config', { method: 'POST', body: JSON.stringify({site: targetSite, ...configs[targetSite]}) });
+            
+            document.getElementById('e-site-id').value = targetSite;
+            document.getElementById('sys-title').innerText = targetSite;
+            
+            currentOriginalConfigStr = JSON.stringify({ tpl: configs[targetSite].tpl, scale: configs[targetSite].scale, offsetX: configs[targetSite].offsetX, padBox: configs[targetSite].padBox, padItemX: configs[targetSite].padItemX, padItemY: configs[targetSite].padItemY, layout: configs[targetSite].layout, useCustom: configs[targetSite].useCustom, colors: configs[targetSite].colors, order: configs[targetSite].order, pv: configs[targetSite].pv, uv: configs[targetSite].uv, dpv: configs[targetSite].dpv, duv: configs[targetSite].duv, shows: configs[targetSite].shows });
             checkChanges();
             renderSites();
             showToast('保存成功');
@@ -781,18 +798,20 @@
 
         function handleBackBtn() { closeEdit(); }
 
-        function closeEdit(fromPop = false) {
+        function closeEdit() {
             document.getElementById('view-edit').classList.remove('show');
             document.getElementById('btn-back').style.display = 'none';
+            document.getElementById('btn-delete-top').style.display = 'none';
             document.getElementById('fab-add').style.display = 'flex';
             document.getElementById('nav-bar').style.display = 'flex';
             document.getElementById('edit-nav-bar').style.display = 'none';
+            document.getElementById('sys-title').innerText = '网站管理';
             isEditOpen = false;
         }
 
         function confirmDeleteFromEdit() {
             const site = document.getElementById('e-site-id').value;
-            openModal('确认删除', `删除 <b>${site}</b> ？<br><label style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;cursor:pointer;"><input type="checkbox" id="del-erase-data" checked> 同时清除历史统计</label>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="doDelete('${site}')">删除</button>`);
+            openModal('确认删除', `删除 <b>${site}</b> ？<br><label style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px;cursor:pointer;"><input type="checkbox" id="del-erase-data" checked> 同时清除历史统计数据</label>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="doDelete('${site}')">删除</button>`);
         }
 
         async function doDelete(site) {
