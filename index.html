@@ -5,80 +5,439 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>网站统计管理</title>
     <style>
-        :root { --bg: #f4f1eb; --card: #ffffff; --text-m: #5c5c5c; --text-l: #a5acaa; --primary: #a0b5a6; --border: #ece9e0; --danger: #e2a099; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--text-m); margin: 0; overflow: hidden; height: 100vh; }
+        :root {
+            --bg: #f7f5f0;
+            --card: #ffffff;
+            --text-m: #4a4a4a;
+            --text-l: #9b9b9b;
+            --primary: #8da493;
+            --primary-dark: #788f7e;
+            --border: #e8e6df;
+            --danger: #d9827c;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-m);
+            overflow: hidden;
+            height: 100vh;
+        }
         
-        /* 头部 */
-        .header { background: var(--card); padding: 15px; font-size: 18px; font-weight: 600; text-align: center; border-bottom: 1px solid var(--border); position: relative; z-index: 20; padding-top: calc(15px + env(safe-area-inset-top)); transition: 0.3s; }
-        .header .btn-back { position: absolute; left: 15px; bottom: 15px; font-size: 15px; color: var(--primary); font-weight: 500; display: none; cursor: pointer; }
+        .header {
+            background: var(--card);
+            height: calc(54px + env(safe-area-inset-top));
+            padding-top: env(safe-area-inset-top);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 20;
+        }
+
+        .header .btn-back {
+            position: absolute;
+            left: 16px;
+            bottom: 0;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+            color: var(--primary);
+            display: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
         
-        /* 视图容器 */
-        .view-container { position: relative; height: calc(100vh - 55px - env(safe-area-inset-top)); overflow: hidden; }
-        .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 20px; padding-bottom: 90px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-        .view.active { opacity: 1; pointer-events: auto; }
+        .view-container {
+            position: relative;
+            height: calc(100vh - 54px - env(safe-area-inset-top));
+            overflow: hidden;
+        }
+
+        .view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 20px calc(100px + env(safe-area-inset-bottom)) 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .view.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
         
-        /* 编辑页面 */
-        #view-edit { transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); background: var(--bg); z-index: 30; opacity: 1; pointer-events: auto; padding-bottom: 40px; }
-        #view-edit.show { transform: translateX(0); }
+        #view-edit {
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: var(--bg);
+            z-index: 30;
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-        /* 卡片基础 */
-        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid var(--border); }
-        .card-header { font-weight: 600; margin-bottom: 15px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        #view-edit.show {
+            transform: translateX(0);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            font-weight: 600;
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: var(--text-m);
+        }
         
-        /* 自定义下拉选择器 */
-        .custom-select-wrapper { position: relative; margin-bottom: 15px; user-select: none; }
-        .custom-select { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 15px; color: var(--text-m); }
-        .custom-select .arrow { transition: transform 0.2s; color: var(--text-l); font-size: 12px; }
-        .custom-select.open .arrow { transform: rotate(180deg); }
-        .dropdown-list { position: absolute; top: 100%; left: 0; width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-top: 5px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); z-index: 100; max-height: 200px; overflow-y: auto; opacity: 0; pointer-events: none; transform: translateY(-10px); transition: 0.2s; }
-        .dropdown-list.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .dropdown-item { padding: 14px 16px; border-bottom: 1px solid var(--bg); font-size: 15px; cursor: pointer; }
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:active { background: var(--bg); }
+        .custom-select-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+            user-select: none;
+        }
 
-        /* 统计数据网格 */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .stat-box { background: var(--bg); padding: 15px 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .stat-label { font-size: 12px; color: var(--text-l); margin-bottom: 6px; }
-        .stat-val { font-size: 22px; font-weight: bold; color: var(--text-m); }
+        .custom-select {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 0 16px;
+            height: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 15px;
+            color: var(--text-m);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
 
-        /* 网站列表卡片 */
-        .site-card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); transition: 0.1s; cursor: pointer; }
-        .site-card:active { transform: scale(0.98); }
-        .site-domain { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
-        .site-desc { font-size: 13px; color: var(--text-l); }
+        .custom-select .arrow {
+            transition: transform 0.2s;
+            color: var(--text-l);
+            font-size: 12px;
+        }
 
-        /* 悬浮球 */
-        .fab { position: fixed; bottom: 30px; right: 20px; width: 54px; height: 54px; background: var(--primary); border-radius: 27px; display: flex; justify-content: center; align-items: center; color: white; font-size: 28px; box-shadow: 0 6px 16px rgba(160, 181, 166, 0.4); z-index: 15; cursor: pointer; transition: 0.2s; }
-        .fab:active { transform: scale(0.9); }
+        .custom-select.open .arrow {
+            transform: rotate(180deg);
+        }
 
-        /* 表单元素 */
-        .form-group { margin-bottom: 15px; }
-        .label { font-size: 13px; color: var(--text-m); margin-bottom: 8px; font-weight: 500; }
-        input, select.native-select { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 14px 15px; border-radius: 10px; font-size: 14px; color: var(--text-m); outline: none; -webkit-appearance: none; }
-        input:focus, select.native-select:focus { border-color: var(--primary); }
+        .dropdown-list {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            z-index: 100;
+            max-height: 220px;
+            overflow-y: auto;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .dropdown-list.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--bg);
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:active {
+            background: var(--bg);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: var(--bg);
+            padding: 16px 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-l);
+            margin-bottom: 8px;
+        }
+
+        .stat-val {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-m);
+        }
+
+        .site-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+            transition: transform 0.1s;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .site-card:active {
+            transform: scale(0.97);
+        }
+
+        .site-domain {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .site-desc {
+            font-size: 13px;
+            color: var(--text-l);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: calc(30px + env(safe-area-inset-bottom));
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            border-radius: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 6px 20px rgba(141, 164, 147, 0.5);
+            z-index: 15;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .label {
+            font-size: 13px;
+            color: var(--text-m);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        input[type="text"], select.native-select {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            height: 48px;
+            padding: 0 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-m);
+            outline: none;
+            -webkit-appearance: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select.native-select:focus {
+            border-color: var(--primary);
+        }
         
-        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
-        .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-m); }
-        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+        .toggle-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: var(--card);
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
 
-        /* 按钮 */
-        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.2s; margin-bottom: 12px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: #fffcfc; color: var(--danger); border: 1px solid var(--danger); }
-        .btn-outline { background: var(--bg); border: 1px solid var(--border); color: var(--text-m); }
-        .btn:active { transform: scale(0.97); }
-        .action-row { display: flex; gap: 10px; margin-top: 10px; }
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-m);
+        }
 
-        /* 弹窗与提示 */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: var(--card); width: 85%; max-width: 400px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transform: scale(0.95); opacity: 0; transition: 0.2s; }
-        .modal.show { transform: scale(1); opacity: 1; }
-        .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; text-align: center; }
-        .modal-body { font-size: 14px; color: var(--text-m); margin-bottom: 25px; text-align: center; line-height: 1.5; }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            height: 50px;
+            border-radius: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(141, 164, 147, 0.3);
+        }
+
+        .btn-danger {
+            background: #ffffff;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-outline {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text-m);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal {
+            background: var(--card);
+            width: 100%;
+            max-width: 340px;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            color: var(--text-m);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .code-preview {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            text-align: left;
+            color: var(--text-m);
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .code-tip {
+            font-size: 12px;
+            color: var(--text-l);
+            text-align: center;
+        }
         
-        .toast { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; display: none; z-index: 200; font-weight: 500; white-space: nowrap; }
+        .toast {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 15px;
+            display: none;
+            z-index: 200;
+            font-weight: 500;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -97,10 +456,10 @@
                     <span class="arrow">▼</span>
                 </div>
                 <div class="dropdown-list" id="dropdown-list">
-                    </div>
+                </div>
             </div>
 
-            <div class="card" id="stat-board" style="display:none; padding:15px;">
+            <div class="card" id="stat-board" style="display:none; padding:20px;">
                 <div class="stat-grid">
                     <div class="stat-box"><div class="stat-label">总访问量 (PV)</div><div class="stat-val" id="sv-pv">0</div></div>
                     <div class="stat-box"><div class="stat-label">总访客数 (UV)</div><div class="stat-val" id="sv-uv">0</div></div>
@@ -109,10 +468,10 @@
                 </div>
             </div>
 
-            <div class="card-header" style="margin-top: 25px; font-size: 15px;">已添加的网站</div>
+            <div class="card-header" style="margin-top: 30px; font-size: 16px;">已添加的网站</div>
             <div id="site-list"></div>
             
-            <div class="fab" onclick="addSite()">+</div>
+            <div class="fab" onclick="showAddSiteModal()">+</div>
         </div>
 
         <div id="view-edit">
@@ -140,7 +499,7 @@
                     </select>
                 </div>
 
-                <div class="label" style="margin-top: 20px;">自定义页面显示的文字</div>
+                <div class="label" style="margin-top: 24px;">自定义页面显示的文字</div>
                 <div style="display:flex; gap:12px;">
                     <div class="form-group" style="flex:1;"><input type="text" id="e-v-pv" placeholder="比如: 总访问"></div>
                     <div class="form-group" style="flex:1;"><input type="text" id="e-v-uv" placeholder="比如: 总访客"></div>
@@ -150,10 +509,10 @@
                     <div class="form-group" style="flex:1;"><input type="text" id="e-v-duv" placeholder="比如: 今日访客"></div>
                 </div>
 
-                <div style="margin-top: 20px;">
+                <div style="margin-top: 30px;">
                     <button class="btn btn-primary" onclick="saveEdit()">保存设置</button>
                     <div class="action-row">
-                        <button class="btn btn-outline" onclick="genLinkFromEdit()">获取统计代码</button>
+                        <button class="btn btn-outline" onclick="genLinkFromEdit()">获取代码</button>
                         <button class="btn btn-danger" onclick="confirmDeleteFromEdit()">删除网站</button>
                     </div>
                 </div>
@@ -174,7 +533,6 @@
     <script>
         let configs = {};
 
-        // 提示与弹窗控制
         function showToast(msg, ms=1500) {
             const t = document.getElementById('toast');
             t.innerText = msg;
@@ -198,7 +556,6 @@
             setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 200);
         }
 
-        // 自定义下拉菜单逻辑
         function toggleDropdown(e) {
             e.stopPropagation();
             const list = document.getElementById('dropdown-list');
@@ -212,7 +569,6 @@
             document.getElementById('custom-select').classList.remove('open');
         });
 
-        // 初始化加载
         async function initLoad() {
             const list = document.getElementById('site-list');
             list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:30px;">正在获取数据...</div>';
@@ -222,7 +578,6 @@
             renderDropdown();
         }
 
-        // 渲染列表
         function renderSites() {
             const list = document.getElementById('site-list');
             list.innerHTML = '';
@@ -230,10 +585,10 @@
                 list.innerHTML += `
                 <div class="site-card" onclick="openEdit('${site}')">
                     <div>
-                        <div class="site-domain">网站编号: ${site}</div>
+                        <div class="site-domain">网站名称: ${site}</div>
                         <div class="site-desc">点击修改设置或获取代码</div>
                     </div>
-                    <div style="color:var(--primary); font-size:18px;">＞</div>
+                    <div style="color:var(--primary); font-size:20px; font-weight:bold;">›</div>
                 </div>`;
             }
             if (Object.keys(configs).length === 0) {
@@ -241,7 +596,6 @@
             }
         }
 
-        // 渲染自定义下拉列表
         function renderDropdown() {
             const dropList = document.getElementById('dropdown-list');
             dropList.innerHTML = '';
@@ -250,16 +604,14 @@
                 return;
             }
             for (let site in configs) {
-                dropList.innerHTML += `<div class="dropdown-item" onclick="selectStatSite('${site}')">查看网站: ${site}</div>`;
+                dropList.innerHTML += `<div class="dropdown-item" onclick="selectStatSite('${site}')">${site}</div>`;
             }
         }
 
-        // 选择网站并获取统计数据
         async function selectStatSite(site) {
-            document.getElementById('select-text').innerText = `当前网站: ${site}`;
+            document.getElementById('select-text').innerText = `当前查看: ${site}`;
             document.getElementById('stat-board').style.display = 'block';
             
-            // 显示加载中状态
             document.getElementById('sv-pv').innerText = '-';
             document.getElementById('sv-uv').innerText = '-';
             document.getElementById('sv-dpv').innerText = '-';
@@ -273,16 +625,31 @@
             document.getElementById('sv-duv').innerText = data.duv;
         }
 
-        // 添加新网站
-        async function addSite() {
-            let keys = Object.keys(configs);
-            let nextId = 1;
-            if (keys.length > 0) {
-                let nums = keys.map(k => parseInt(k)).filter(n => !isNaN(n));
-                if (nums.length > 0) nextId = Math.max(...nums) + 1;
+        function showAddSiteModal() {
+            openModal('添加新网站',
+                `<input type="text" id="new-site-input" placeholder="输入网站名称（如：我的博客）" style="margin-top:10px;">`,
+                `<button class="btn btn-outline" onclick="closeModal()">取消</button>
+                 <button class="btn btn-primary" onclick="confirmAddSite()">确认添加</button>`
+            );
+            setTimeout(() => {
+                const input = document.getElementById('new-site-input');
+                if(input) input.focus();
+            }, 300);
+        }
+
+        async function confirmAddSite() {
+            const input = document.getElementById('new-site-input');
+            const site = input.value.trim();
+            if (!site) {
+                showToast('网站名称不能为空');
+                return;
             }
-            const site = nextId.toString();
-            
+            if (configs[site]) {
+                showToast('这个名称已经存在了');
+                return;
+            }
+
+            closeModal();
             showToast('正在添加...');
             
             configs[site] = { tpl: 1, pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
@@ -295,7 +662,6 @@
             openEdit(site);
         }
 
-        // 打开编辑页
         function openEdit(site) {
             const c = configs[site];
             document.getElementById('e-site-id').value = site;
@@ -312,19 +678,17 @@
             
             document.getElementById('e-tpl-select').value = c.tpl || 1;
 
-            document.getElementById('sys-title').innerText = `设置网站: ${site}`;
-            document.getElementById('btn-back').style.display = 'block';
+            document.getElementById('sys-title').innerText = `设置: ${site}`;
+            document.getElementById('btn-back').style.display = 'flex';
             document.getElementById('view-edit').classList.add('show');
         }
 
-        // 关闭编辑页
         function closeEdit() {
             document.getElementById('view-edit').classList.remove('show');
             document.getElementById('btn-back').style.display = 'none';
             document.getElementById('sys-title').innerText = '网站统计管理';
         }
 
-        // 保存设置
         async function saveEdit() {
             const site = document.getElementById('e-site-id').value;
             configs[site] = {
@@ -350,15 +714,14 @@
             closeEdit();
         }
 
-        // 确认删除网站
         function confirmDeleteFromEdit() {
             const site = document.getElementById('e-site-id').value;
-            openModal('确认删除', `确定要删除网站 <b>${site}</b> 吗？删除后该网站的统计代码将失效。`, 
+            openModal('确认删除', 
+            `确定要删除 <b>${site}</b> 吗？<br><br>删除后，安装在这个网站上的代码将立刻失效，并且无法恢复。`, 
             `<button class="btn btn-outline" onclick="closeModal()">取消</button>
              <button class="btn btn-danger" onclick="doDelete('${site}')">确认删除</button>`);
         }
 
-        // 执行删除
         async function doDelete(site) {
             closeModal();
             showToast('删除中...');
@@ -367,40 +730,37 @@
             renderSites();
             renderDropdown();
             
-            // 如果删除的是当前正在看数据的网站，则重置看板
             if(document.getElementById('select-text').innerText.includes(site)) {
                 document.getElementById('select-text').innerText = '请选择要查看数据的网站';
                 document.getElementById('stat-board').style.display = 'none';
             }
             
             closeEdit();
-            showToast('已删除');
+            showToast('已成功删除');
         }
 
-        // 生成统计代码
         function genLinkFromEdit() {
             const site = document.getElementById('e-site-id').value;
-            showToast('生成中...', 1000);
+            showToast('正在获取代码...', 800);
             setTimeout(() => {
                 const code = `<div id="cf-stat"></div>\n<script async src="${window.location.origin}/stats?action=script&site=${site}"><\/script>`;
                 const escCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 openModal('网站统计代码', 
-                `<div style="background:#fafafa; border:1px solid var(--border); padding:15px; border-radius:10px; font-family:monospace; font-size:12px; word-break:break-all; text-align:left; color:var(--text-m); margin-bottom:10px;">${escCode}</div>
-                 <div style="font-size:12px; color:var(--text-l);">请将以上代码粘贴到你网站 HTML 的 &lt;body&gt; 内部</div>`,
-                `<button class="btn btn-outline" onclick="closeModal()">取消</button>
-                 <button class="btn btn-primary" onclick="copyCode(\`${code}\`)">复制完整代码</button>`);
+                `<div class="code-preview">${escCode}</div>
+                 <div class="code-tip">请点击下方按钮复制，并粘贴到你网站 HTML 的 &lt;body&gt; 内部</div>`,
+                `<button class="btn btn-outline" onclick="closeModal()">关闭</button>
+                 <button class="btn btn-primary" onclick="copyCode('${site}')">复制完整代码</button>`);
             }, 800);
         }
 
-        // 复制代码到剪贴板
-        function copyCode(str) {
-            navigator.clipboard.writeText(str);
+        function copyCode(site) {
+            const code = `<div id="cf-stat"></div>\n<script async src="${window.location.origin}/stats?action=script&site=${site}"><\/script>`;
+            navigator.clipboard.writeText(code);
             closeModal();
             closeEdit();
-            setTimeout(() => showToast('复制成功！'), 300);
+            setTimeout(() => showToast('复制成功！快去粘贴吧'), 400);
         }
 
-        // 启动应用
         initLoad();
     </script>
 </body>
