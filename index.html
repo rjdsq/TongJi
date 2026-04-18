@@ -9,7 +9,6 @@
             --bg: #f7f5f0; --card: #ffffff; --text-m: #4a4a4a; --text-l: #9b9b9b;
             --primary: #8da493; --border: #e8e6df; --danger: #d9827c;
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--text-m); overflow: hidden; height: 100vh; }
         
@@ -49,12 +48,21 @@
 
         .form-group { margin-bottom: 18px; }
         .label { font-size: 13px; color: var(--text-m); margin-bottom: 10px; font-weight: 500; }
-        input[type="text"], input[type="password"], select.native-select { width: 100%; background: var(--card); border: 1px solid var(--border); height: 48px; padding: 0 16px; border-radius: 12px; font-size: 15px; color: var(--text-m); outline: none; -webkit-appearance: none; }
+        input[type="text"], select.native-select { width: 100%; background: var(--card); border: 1px solid var(--border); height: 48px; padding: 0 16px; border-radius: 12px; font-size: 15px; color: var(--text-m); outline: none; -webkit-appearance: none; }
         input:focus, select.native-select:focus { border-color: var(--primary); }
+        
+        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; height: 40px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary); margin-top: -10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: var(--border); border-radius: 2px; }
         
         .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--card); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
         .toggle-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-m); }
-        input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); }
+        input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-color: var(--primary); }
+
+        .sort-list { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 8px; }
+        .sort-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--bg); font-size: 14px; }
+        .sort-item:last-child { border-bottom: none; }
+        .sort-btns { display: flex; gap: 15px; color: var(--primary); font-size: 18px; font-weight: bold; }
 
         .btn { width: 100%; height: 50px; border-radius: 14px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.1s; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(141, 164, 147, 0.3); }
@@ -70,7 +78,8 @@
         .modal-body { font-size: 14px; color: var(--text-m); margin-bottom: 24px; text-align: center; line-height: 1.6; }
         
         .code-preview { background: var(--bg); border: 1px solid var(--border); padding: 16px; border-radius: 12px; font-family: monospace; font-size: 13px; word-break: break-all; text-align: left; color: var(--text-m); max-height: 120px; overflow-y: auto; margin-bottom: 12px; }
-        .code-tip { font-size: 12px; color: var(--text-l); text-align: center; }
+        
+        .live-preview-box { background: var(--card); border: 1px dashed var(--primary); border-radius: 16px; padding: 20px 10px; margin-bottom: 20px; min-height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         
         .toast { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 14px 28px; border-radius: 14px; font-size: 15px; display: none; z-index: 200; font-weight: 500; white-space: nowrap; }
     </style>
@@ -85,9 +94,9 @@
     <div id="view-login" class="view">
         <div class="card" style="width:100%; max-width:340px;">
             <div class="card-header" style="text-align:center; font-size:20px;">系统登录</div>
-            <div class="form-group"><input type="password" id="login-pwd" placeholder="请输入系统访问密码"></div>
+            <div class="form-group"><input type="text" id="login-pwd" placeholder="请输入系统密码" style="-webkit-text-security:disc;"></div>
             <div class="form-group toggle-item" style="justify-content:center; margin-bottom:20px;">
-                <input type="checkbox" id="login-rem" checked> <label for="login-rem">记住密码，下次自动登录</label>
+                <input type="checkbox" id="login-rem" checked> <label for="login-rem">记住密码</label>
             </div>
             <button class="btn btn-primary" onclick="doLogin()">进入系统</button>
         </div>
@@ -102,11 +111,10 @@
 
         <div id="tab-stat" class="view" style="padding-bottom:120px;">
             <div class="form-group">
-                <select id="stat-selector" class="native-select" style="font-weight:600;" onchange="selectStat(this.value)">
-                </select>
+                <select id="stat-selector" class="native-select" style="font-weight:600;" onchange="selectStat(this.value)"></select>
             </div>
             <div class="card" id="stat-board" style="padding:15px; background:var(--primary); color:white; border:none;">
-                <div style="font-size:16px; font-weight:600; margin-bottom:15px;" id="stat-view-title">全站数据汇总</div>
+                <div style="font-size:16px; font-weight:600; margin-bottom:15px;" id="stat-view-title">全站汇总</div>
                 <div class="stat-grid">
                     <div class="stat-box" style="background:rgba(255,255,255,0.15); border:none;"><div class="stat-label" style="color:rgba(255,255,255,0.8);">总访问</div><div class="stat-val" style="color:white;" id="all-pv">-</div></div>
                     <div class="stat-box" style="background:rgba(255,255,255,0.15); border:none;"><div class="stat-label" style="color:rgba(255,255,255,0.8);">总访客</div><div class="stat-val" style="color:white;" id="all-uv">-</div></div>
@@ -114,28 +122,21 @@
                     <div class="stat-box" style="background:rgba(255,255,255,0.15); border:none;"><div class="stat-label" style="color:rgba(255,255,255,0.8);">今日访客</div><div class="stat-val" style="color:white;" id="all-duv">-</div></div>
                 </div>
             </div>
-            <div class="card-header" style="margin-top:20px;">各网站详细明细</div>
             <div id="stat-detail-list"></div>
         </div>
 
         <div id="tab-sys" class="view" style="padding-bottom:120px;">
             <div class="card">
-                <div class="card-header">安全与访问</div>
-                <div class="form-group">
-                    <div class="label">修改后台访问密码 (留空即无密码)</div>
-                    <input type="text" id="sys-pwd" placeholder="输入新密码">
-                </div>
+                <div class="card-header">安全密码设置</div>
+                <div class="form-group"><input type="text" id="sys-pwd" placeholder="设置新密码 (留空则无密码)"></div>
                 <div class="form-group toggle-item" id="sec-rem-pwd" style="display:none; justify-content:space-between; margin-bottom:20px;">
-                    <label for="sys-rem-checkbox">在本机记住密码，免密登录</label>
-                    <input type="checkbox" id="sys-rem-checkbox" checked>
+                    <label>本机记住密码</label><input type="checkbox" id="sys-rem-checkbox" checked>
                 </div>
                 <button class="btn btn-primary" onclick="saveSysConfig()">保存安全设置</button>
-                <button class="btn btn-outline" id="sec-logout" style="display:none; margin-top:12px; color:var(--danger); border-color:var(--danger);" onclick="logout()">退出当前登录</button>
+                <button class="btn btn-outline" id="sec-logout" style="display:none; margin-top:12px; color:var(--danger); border-color:var(--danger);" onclick="logout()">退出登录</button>
             </div>
             <div class="card">
-                <div class="card-header" style="color:var(--danger);">危险操作</div>
-                <div style="font-size:13px; color:var(--text-l); margin-bottom:15px;">清空所有数据及密码，不可恢复。</div>
-                <button class="btn btn-danger" onclick="confirmClearAll()">清空系统所有数据</button>
+                <button class="btn btn-danger" onclick="confirmClearAll()">清空所有数据</button>
             </div>
         </div>
 
@@ -143,63 +144,66 @@
             <div class="edit-scroll-box">
                 <input type="hidden" id="e-site-id">
                 
-                <div class="label">选择显示的模块</div>
-                <div class="toggle-group form-group">
-                    <label class="toggle-item"><input type="checkbox" id="e-t-pv" onchange="checkChanges()"> 总访问</label>
-                    <label class="toggle-item"><input type="checkbox" id="e-t-uv" onchange="checkChanges()"> 总访客</label>
-                    <label class="toggle-item"><input type="checkbox" id="e-t-dpv" onchange="checkChanges()"> 今日访问</label>
-                    <label class="toggle-item"><input type="checkbox" id="e-t-duv" onchange="checkChanges()"> 今日访客</label>
-                </div>
+                <div class="live-preview-box" id="live-preview-container"></div>
 
                 <div class="form-group">
-                    <div class="label">对齐方式与尺寸大小</div>
+                    <div class="label">自由缩放大小</div>
+                    <input type="range" id="e-scale" min="0.5" max="1" step="0.05" oninput="updatePreview()">
+                </div>
+
+                <div class="form-group toggle-group" style="grid-template-columns:1fr 1fr; margin-bottom:24px;">
+                    <label class="toggle-item"><input type="radio" name="e-layout" value="row" onchange="updatePreview()"> 单行并排</label>
+                    <label class="toggle-item"><input type="radio" name="e-layout" value="grid" onchange="updatePreview()"> 双行矩阵</label>
+                </div>
+
+                <div class="label">拖拽改变排列顺序与显隐</div>
+                <div class="sort-list form-group" id="sort-list"></div>
+
+                <div class="form-group">
+                    <div class="label">主题风格与对齐</div>
                     <div style="display:flex; gap:12px;">
-                        <select id="e-align" class="native-select" style="flex:1;" onchange="checkChanges()">
-                            <option value="left">居左对齐</option>
-                            <option value="center">居中对齐</option>
-                            <option value="right">居右对齐</option>
+                        <select id="e-tpl-select" class="native-select" style="flex:2;" onchange="updatePreview()">
+                            <option value="1">燕麦暖色</option>
+                            <option value="2">纯白经典</option>
+                            <option value="3">灰绿冷调</option>
+                            <option value="4">藕荷粉黛</option>
+                            <option value="5">雾霾灰蓝</option>
+                            <option value="6">暗影极黑</option>
+                            <option value="7">黑武士</option>
+                            <option value="8">粉霜初绽</option>
+                            <option value="9">森系留白</option>
+                            <option value="10">隐形无框</option>
+                            <option value="11">霓虹幻影</option>
+                            <option value="12">极客黑客</option>
+                            <option value="13">咖啡醇香</option>
+                            <option value="14">深海幽蓝</option>
+                            <option value="15">落日余晖</option>
+                            <option value="16">森林秘境</option>
+                            <option value="17">樱落柔情</option>
+                            <option value="18">薰衣草紫</option>
+                            <option value="19">珊瑚橘暖</option>
+                            <option value="20">极致极简</option>
                         </select>
-                        <select id="e-size" class="native-select" style="flex:1;" onchange="checkChanges()">
-                            <option value="1">小号尺寸</option>
-                            <option value="2">中号尺寸</option>
-                            <option value="3">大号尺寸</option>
+                        <select id="e-align" class="native-select" style="flex:1;" onchange="updatePreview()">
+                            <option value="left">居左</option>
+                            <option value="center">居中</option>
+                            <option value="right">居右</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <div class="label">选择展现效果</div>
-                    <select id="e-tpl-select" class="native-select" onchange="checkChanges()">
-                        <option value="1">燕麦暖色</option>
-                        <option value="3">灰绿冷调</option>
-                        <option value="4">藕荷粉黛</option>
-                        <option value="5">雾霾灰蓝</option>
-                        <option value="10">隐形无框</option>
-                        <option value="11">赛博朋克</option>
-                        <option value="12">极客终端</option>
-                        <option value="13">咖啡醇香</option>
-                        <option value="14">深海幽蓝</option>
-                        <option value="15">落日余晖</option>
-                        <option value="16">森林秘境</option>
-                        <option value="17">樱花粉柔</option>
-                        <option value="18">薰衣草紫</option>
-                        <option value="19">珊瑚橘暖</option>
-                        <option value="20">极简留白</option>
-                    </select>
-                </div>
-
-                <div class="label" style="margin-top: 24px;">自定义页面文字</div>
+                <div class="label" style="margin-top:24px;">修改展示文案</div>
                 <div style="display:flex; gap:12px;">
-                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-pv" placeholder="总访问" oninput="checkChanges()"></div>
-                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-uv" placeholder="总访客" oninput="checkChanges()"></div>
+                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-pv" oninput="updatePreview()"></div>
+                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-uv" oninput="updatePreview()"></div>
                 </div>
                 <div style="display:flex; gap:12px;">
-                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-dpv" placeholder="今日访问" oninput="checkChanges()"></div>
-                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-duv" placeholder="今日访客" oninput="checkChanges()"></div>
+                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-dpv" oninput="updatePreview()"></div>
+                    <div class="form-group" style="flex:1;"><input type="text" id="e-v-duv" oninput="updatePreview()"></div>
                 </div>
 
                 <div style="margin-top: 30px;">
-                    <button class="btn btn-primary" id="btn-save-edit" onclick="saveEdit()">保存设置</button>
+                    <button class="btn btn-primary" id="btn-save-edit" onclick="saveEdit()" style="opacity:0.5; pointer-events:none;">无变动可保存</button>
                     <div class="action-row">
                         <button class="btn btn-outline" onclick="genLinkFromEdit()">获取代码</button>
                         <button class="btn btn-danger" onclick="confirmDeleteFromEdit()">删除网站</button>
@@ -230,8 +234,32 @@
         let allStatsData = null; 
         let isEditOpen = false;
         let sysHasPwd = false;
-
-        const tabTitles = { site: '网站管理', stat: '统计概览', sys: '系统设置' };
+        let currentOrder = [];
+        let currentOriginalConfigStr = "";
+        
+        const keyMap = { pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客' };
+        const tplDict = {
+            1: { bg: '#f9f7f2', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' },
+            2: { bg: '#ffffff', border: '#f4f1eb', val: '#5c5c5c', lbl: '#a0b5a6' },
+            3: { bg: '#eef0ed', border: '#eef0ed', val: '#8da493', lbl: '#788583' },
+            4: { bg: '#f5f0ef', border: '#ece5e3', val: '#bca39f', lbl: '#a5acaa' },
+            5: { bg: '#f2f5f6', border: '#e8edf0', val: '#7f93a1', lbl: '#a5acaa' },
+            6: { bg: '#fafafa', border: '#333333', val: '#333333', lbl: '#666666' },
+            7: { bg: '#333333', border: '#333333', val: '#f9f7f2', lbl: '#a5acaa' },
+            8: { bg: '#f9f9f9', border: '#d0b8b4', val: '#d0b8b4', lbl: '#a5acaa' },
+            9: { bg: '#ffffff', border: '#a0b5a6', val: '#a0b5a6', lbl: '#a5acaa' },
+            10: { bg: 'transparent', border: 'transparent', val: '#788583', lbl: '#a5acaa' },
+            11: { bg: '#121212', border: '#00ffcc', val: '#00ffcc', lbl: '#009999' },
+            12: { bg: '#000000', border: '#39ff14', val: '#39ff14', lbl: '#228b22' },
+            13: { bg: '#f4ece6', border: '#e2d3c8', val: '#5c4033', lbl: '#8b7355' },
+            14: { bg: '#0a192f', border: '#172a45', val: '#64ffda', lbl: '#8892b0' },
+            15: { bg: '#fff0e6', border: '#ffdcb3', val: '#ff7f50', lbl: '#ff9966' },
+            16: { bg: '#1b2a22', border: '#253e30', val: '#a8d5ba', lbl: '#7eb08c' },
+            17: { bg: '#fff0f5', border: '#ffb6c1', val: '#ff69b4', lbl: '#ffc0cb' },
+            18: { bg: '#f8f8ff', border: '#e6e6fa', val: '#9370db', lbl: '#b0c4de' },
+            19: { bg: '#fff5ee', border: '#ffdab9', val: '#ff4500', lbl: '#ffa07a' },
+            20: { bg: '#ffffff', border: '#000000', val: '#000000', lbl: '#000000' }
+        };
 
         window.addEventListener('popstate', (e) => {
             if (isEditOpen) closeEdit(true);
@@ -265,12 +293,10 @@
             document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
             event.currentTarget.classList.add('active');
-            document.getElementById('sys-title').innerText = tabTitles[tab];
             
             const fab = document.getElementById('fab-add');
             if (tab === 'site' && !isEditOpen) fab.style.display = 'flex';
             else fab.style.display = 'none';
-
             if(tab === 'stat') loadAllStats();
         }
 
@@ -341,41 +367,31 @@
                 sysHasPwd = false;
                 localStorage.removeItem('sys_pwd');
             }
-            
             updateSysUI();
             showToast('安全设置已保存');
         }
 
         function confirmClearAll() {
-            openModal('警告：清空所有数据', 
-            `确定清空所有网站和密码吗？不可恢复！`, 
-            `<button class="btn btn-outline" onclick="closeModal()">取消</button>
-             <button class="btn btn-danger" onclick="doClearAll()">确认清空</button>`);
+            openModal('危险操作', `清空所有配置及密码？不可恢复。`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="doClearAll()">确认</button>`);
         }
 
         async function doClearAll() {
             closeModal();
-            showToast('正在格式化...', 2000);
+            showToast('格式化中...', 2000);
             await fetch('/stats?action=clear_all', { method: 'POST' });
             localStorage.removeItem('sys_pwd');
-            showToast('已清空，即将重启');
-            setTimeout(() => { location.reload(); }, 1000);
+            location.reload();
         }
 
         async function initApp() {
             document.getElementById('sys-pwd').value = localStorage.getItem('sys_pwd') || '';
-            
             document.getElementById('view-login').style.display = 'none';
             document.getElementById('header-bar').style.display = 'flex';
             document.getElementById('main-container').style.display = 'block';
             document.getElementById('nav-bar').style.display = 'flex';
             
-            const list = document.getElementById('site-list');
-            list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:30px;">获取数据中...</div>';
-            
             const res = await fetch('/stats?action=get_configs');
             configs = await res.json();
-            
             renderSites();
             document.getElementById('fab-add').style.display = 'flex';
         }
@@ -384,101 +400,147 @@
             const list = document.getElementById('site-list');
             list.innerHTML = '';
             for (let site in configs) {
-                list.innerHTML += `
-                <div class="site-card" onclick="openEdit('${site}')">
-                    <div class="site-domain" style="margin-bottom:0;">${site}</div>
-                    <div style="color:var(--primary); font-size:20px; font-weight:bold;">›</div>
-                </div>`;
-            }
-            if (Object.keys(configs).length === 0) {
-                list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:50px; line-height:1.8;">还没有添加网站<br>点击右下角按钮添加</div>';
+                list.innerHTML += `<div class="site-card" onclick="openEdit('${site}')"><div class="site-domain" style="margin-bottom:0;">${site}</div><div style="color:var(--primary); font-size:20px; font-weight:bold;">›</div></div>`;
             }
         }
 
         async function loadAllStats() {
-            document.getElementById('stat-detail-list').innerHTML = '<div style="text-align:center; color:var(--text-l);">数据加载中...</div>';
             const res = await fetch('/stats?action=get_all_stats');
             allStatsData = await res.json();
             
-            let optionsHtml = '<option value="all">👑 全站数据汇总</option>';
-            for (let site in allStatsData.sites) {
-                optionsHtml += `<option value="${site}">查看网站: ${site}</option>`;
-            }
+            let optionsHtml = '<option value="all">👑 全站汇总</option>';
+            for (let site in allStatsData.sites) optionsHtml += `<option value="${site}">${site}</option>`;
             document.getElementById('stat-selector').innerHTML = optionsHtml;
             document.getElementById('stat-selector').value = 'all';
-            
-            renderStatBoard('all');
+            selectStat('all');
             
             let html = '';
             for (let site in allStatsData.sites) {
                 const s = allStatsData.sites[site];
-                html += `
-                <div class="card" style="padding:15px; margin-bottom:12px;">
-                    <div style="font-weight:600; margin-bottom:10px;">${site}</div>
-                    <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-m); border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px;">
-                        <div>总访问: <b>${s.pv}</b></div><div>总访客: <b>${s.uv}</b></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--primary);">
-                        <div>今日访问: <b>${s.dpv}</b></div><div>今日访客: <b>${s.duv}</b></div>
-                    </div>
-                </div>`;
+                html += `<div class="card" style="padding:15px; margin-bottom:12px;"><div style="font-weight:600; margin-bottom:10px;">${site}</div><div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-m); border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px;"><div>总访问: <b>${s.pv}</b></div><div>总访客: <b>${s.uv}</b></div></div><div style="display:flex; justify-content:space-between; font-size:13px; color:var(--primary);"><div>今日访问: <b>${s.dpv}</b></div><div>今日访客: <b>${s.duv}</b></div></div></div>`;
             }
-            if(Object.keys(allStatsData.sites).length === 0) html = '<div style="text-align:center; color:var(--text-l);">暂无数据</div>';
             document.getElementById('stat-detail-list').innerHTML = html;
         }
 
         function selectStat(target) {
-            renderStatBoard(target);
-        }
-
-        function renderStatBoard(target) {
-            if (!allStatsData) return;
-            if (target === 'all') {
-                document.getElementById('stat-view-title').innerText = '全站数据汇总';
-                document.getElementById('all-pv').innerText = allStatsData.total.pv;
-                document.getElementById('all-uv').innerText = allStatsData.total.uv;
-                document.getElementById('all-dpv').innerText = allStatsData.total.dpv;
-                document.getElementById('all-duv').innerText = allStatsData.total.duv;
-            } else {
-                document.getElementById('stat-view-title').innerText = `[ ${target} ]`;
-                const s = allStatsData.sites[target] || {pv:0,uv:0,dpv:0,duv:0};
-                document.getElementById('all-pv').innerText = s.pv;
-                document.getElementById('all-uv').innerText = s.uv;
-                document.getElementById('all-dpv').innerText = s.dpv;
-                document.getElementById('all-duv').innerText = s.duv;
-            }
+            const s = target === 'all' ? allStatsData.total : (allStatsData.sites[target] || {pv:0,uv:0,dpv:0,duv:0});
+            document.getElementById('stat-view-title').innerText = target === 'all' ? '全站汇总' : target;
+            document.getElementById('all-pv').innerText = s.pv;
+            document.getElementById('all-uv').innerText = s.uv;
+            document.getElementById('all-dpv').innerText = s.dpv;
+            document.getElementById('all-duv').innerText = s.duv;
         }
 
         function showAddSiteModal() {
-            openModal('添加新网站',
-                `<input type="text" id="new-site-input" placeholder="输入网站名称" style="margin-top:10px;">`,
-                `<button class="btn btn-outline" onclick="closeModal()">取消</button>
-                 <button class="btn btn-primary" onclick="confirmAddSite()">确认添加</button>`
-            );
-            setTimeout(() => document.getElementById('new-site-input')?.focus(), 300);
+            openModal('添加网站', `<input type="text" id="new-site-input" placeholder="输入名称" style="margin-top:10px;">`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="confirmAddSite()">确认</button>`);
         }
 
         async function confirmAddSite() {
-            const input = document.getElementById('new-site-input');
-            const site = input.value.trim();
-            if (!site) return showToast('名称不能为空');
-            if (configs[site]) return showToast('此名称已存在');
-
+            const site = document.getElementById('new-site-input').value.trim();
+            if (!site || configs[site]) return showToast('无效或重复');
             closeModal();
             showToast('添加中...');
-            
-            configs[site] = { tpl: 1, size: 1, align: 'center', pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
-            await fetch('/stats?action=save_config', {
-                method: 'POST', body: JSON.stringify({site: site, ...configs[site]})
-            });
-            
+            configs[site] = { tpl: 1, scale: 1, align: 'center', layout: 'row', order: ['pv','uv','dpv','duv'], pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
+            await fetch('/stats?action=save_config', { method: 'POST', body: JSON.stringify({site: site, ...configs[site]}) });
             renderSites();
             openEdit(site);
+        }
+
+        function renderSortList() {
+            const list = document.getElementById('sort-list');
+            list.innerHTML = '';
+            currentOrder.forEach((k, idx) => {
+                const isChecked = document.getElementById(`e-t-${k}`).checked;
+                list.innerHTML += `
+                <div class="sort-item" style="opacity:${isChecked?1:0.5};">
+                    <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="ls-t-${k}" ${isChecked?'checked':''} onchange="syncShows('${k}')"> ${keyMap[k]}</label>
+                    <div class="sort-btns">
+                        <span style="cursor:pointer; opacity:${idx===0?0.2:1};" onclick="moveOrder(${idx}, -1)">▲</span>
+                        <span style="cursor:pointer; opacity:${idx===3?0.2:1};" onclick="moveOrder(${idx}, 1)">▼</span>
+                    </div>
+                </div>`;
+            });
+            updatePreview();
+        }
+
+        function syncShows(k) {
+            document.getElementById(`e-t-${k}`).checked = document.getElementById(`ls-t-${k}`).checked;
+            renderSortList();
+        }
+
+        function moveOrder(idx, dir) {
+            if (idx + dir < 0 || idx + dir > 3) return;
+            const temp = currentOrder[idx];
+            currentOrder[idx] = currentOrder[idx + dir];
+            currentOrder[idx + dir] = temp;
+            renderSortList();
+        }
+
+        function updatePreview() {
+            const tplId = document.getElementById('e-tpl-select').value;
+            const t = tplDict[tplId] || tplDict[1];
+            const align = document.getElementById('e-align').value;
+            const jc = align === 'left' ? 'flex-start' : (align === 'right' ? 'flex-end' : 'center');
+            const scale = parseFloat(document.getElementById('e-scale').value);
+            const baseSize = 14 * scale;
+            const layout = document.querySelector('input[name="e-layout"]:checked').value;
+            const isGrid = layout === 'grid';
+            
+            const names = {
+                pv: document.getElementById('e-v-pv').value,
+                uv: document.getElementById('e-v-uv').value,
+                dpv: document.getElementById('e-v-dpv').value,
+                duv: document.getElementById('e-v-duv').value
+            };
+            
+            let items = [];
+            currentOrder.forEach(k => {
+                if(document.getElementById(`e-t-${k}`).checked) {
+                    items.push(`<div style="flex: 1 1 ${isGrid?'calc(50% - 6px)':'auto'}; min-width:40px; background:${t.bg}; padding:0.6em 0.8em; border-radius:0.6em; border:1px solid ${t.border}; box-sizing:border-box;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${names[k]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">888</div></div>`);
+                }
+            });
+
+            document.getElementById('live-preview-container').innerHTML = `<div style="display:flex; flex-wrap:${isGrid?'wrap':'nowrap'}; gap:8px; width:100%; justify-content:${jc}; text-align:center; font-family:-apple-system,sans-serif; font-size:${baseSize}px; line-height:1;">${items.join('')}</div>`;
+            
+            checkChanges();
+        }
+
+        function checkChanges() {
+            const site = document.getElementById('e-site-id').value;
+            const c = configs[site];
+            if (!c) return;
+
+            const currObj = {
+                tpl: parseInt(document.getElementById('e-tpl-select').value),
+                scale: parseFloat(document.getElementById('e-scale').value),
+                align: document.getElementById('e-align').value,
+                layout: document.querySelector('input[name="e-layout"]:checked').value,
+                order: currentOrder,
+                pv: document.getElementById('e-v-pv').value,
+                uv: document.getElementById('e-v-uv').value,
+                dpv: document.getElementById('e-v-dpv').value,
+                duv: document.getElementById('e-v-duv').value,
+                shows: {
+                    pv: document.getElementById('e-t-pv').checked,
+                    uv: document.getElementById('e-t-uv').checked,
+                    dpv: document.getElementById('e-t-dpv').checked,
+                    duv: document.getElementById('e-t-duv').checked
+                }
+            };
+            
+            const btn = document.getElementById('btn-save-edit');
+            if (JSON.stringify(currObj) !== currentOriginalConfigStr) {
+                btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerText = '立即保存修改';
+            } else {
+                btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; btn.innerText = '配置无变更';
+            }
         }
 
         function openEdit(site) {
             const c = configs[site];
             document.getElementById('e-site-id').value = site;
+            
+            currentOrder = [...(c.order || ['pv','uv','dpv','duv'])];
             
             document.getElementById('e-t-pv').checked = c.shows.pv;
             document.getElementById('e-t-uv').checked = c.shows.uv;
@@ -486,68 +548,34 @@
             document.getElementById('e-t-duv').checked = c.shows.duv;
             
             document.getElementById('e-align').value = c.align || 'center';
-            document.getElementById('e-size').value = c.size || 1;
+            document.getElementById('e-scale').value = c.scale || 1;
             document.getElementById('e-tpl-select').value = c.tpl || 1;
+            
+            document.querySelector(`input[name="e-layout"][value="${c.layout || 'row'}"]`).checked = true;
 
             document.getElementById('e-v-pv').value = c.pv;
             document.getElementById('e-v-uv').value = c.uv;
             document.getElementById('e-v-dpv').value = c.dpv;
             document.getElementById('e-v-duv').value = c.duv;
 
+            renderSortList();
+            
+            currentOriginalConfigStr = JSON.stringify({ tpl: c.tpl||1, scale: c.scale||1, align: c.align||'center', layout: c.layout||'row', order: currentOrder, pv: c.pv, uv: c.uv, dpv: c.dpv, duv: c.duv, shows: c.shows });
             checkChanges();
 
-            document.getElementById('sys-title').innerText = `设置: ${site}`;
             document.getElementById('btn-back').style.display = 'flex';
             document.getElementById('fab-add').style.display = 'none';
             document.getElementById('view-edit').classList.add('show');
-            
             isEditOpen = true;
             history.pushState({view: 'edit'}, '');
         }
 
-        function checkChanges() {
-            const site = document.getElementById('e-site-id').value;
-            const c = configs[site];
-            if (!c) return;
-            
-            const isChanged = (
-                document.getElementById('e-tpl-select').value != (c.tpl || 1) ||
-                document.getElementById('e-size').value != (c.size || 1) ||
-                document.getElementById('e-align').value !== (c.align || 'center') ||
-                document.getElementById('e-v-pv').value !== c.pv ||
-                document.getElementById('e-v-uv').value !== c.uv ||
-                document.getElementById('e-v-dpv').value !== c.dpv ||
-                document.getElementById('e-v-duv').value !== c.duv ||
-                document.getElementById('e-t-pv').checked !== c.shows.pv ||
-                document.getElementById('e-t-uv').checked !== c.shows.uv ||
-                document.getElementById('e-t-dpv').checked !== c.shows.dpv ||
-                document.getElementById('e-t-duv').checked !== c.shows.duv
-            );
-            
-            const btn = document.getElementById('btn-save-edit');
-            if (isChanged) {
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-                btn.innerText = '保存设置';
-            } else {
-                btn.style.opacity = '0.5';
-                btn.style.pointerEvents = 'none';
-                btn.innerText = '无变化项可保存';
-            }
-        }
-
-        function handleBackBtn() {
-            if (isEditOpen) {
-                history.back(); 
-            }
-        }
+        function handleBackBtn() { if (isEditOpen) history.back(); }
 
         function closeEdit(fromPop = false) {
             document.getElementById('view-edit').classList.remove('show');
             document.getElementById('btn-back').style.display = 'none';
-            document.getElementById('sys-title').innerText = '网站管理';
             document.getElementById('fab-add').style.display = 'flex';
-            
             isEditOpen = false;
             if(!fromPop) history.back();
         }
@@ -555,9 +583,11 @@
         async function saveEdit() {
             const site = document.getElementById('e-site-id').value;
             configs[site] = {
-                tpl: document.getElementById('e-tpl-select').value,
-                size: parseInt(document.getElementById('e-size').value),
+                tpl: parseInt(document.getElementById('e-tpl-select').value),
+                scale: parseFloat(document.getElementById('e-scale').value),
                 align: document.getElementById('e-align').value,
+                layout: document.querySelector('input[name="e-layout"]:checked').value,
+                order: [...currentOrder],
                 pv: document.getElementById('e-v-pv').value,
                 uv: document.getElementById('e-v-uv').value,
                 dpv: document.getElementById('e-v-dpv').value,
@@ -571,51 +601,38 @@
             };
             
             showToast('保存中...');
-            await fetch('/stats?action=save_config', {
-                method: 'POST', body: JSON.stringify({site: site, ...configs[site]})
-            });
-            
+            await fetch('/stats?action=save_config', { method: 'POST', body: JSON.stringify({site: site, ...configs[site]}) });
+            currentOriginalConfigStr = JSON.stringify(configs[site]);
             checkChanges();
             showToast('保存成功');
         }
 
         function confirmDeleteFromEdit() {
             const site = document.getElementById('e-site-id').value;
-            openModal('确认删除', 
-            `确定要删除网站 <b>${site}</b> 吗？<br><br>删除后不可恢复，原有的统计代码将马上失效。`, 
-            `<button class="btn btn-outline" onclick="closeModal()">取消</button>
-             <button class="btn btn-danger" onclick="doDelete('${site}')">确认删除</button>`);
+            openModal('确认删除', `确定删除 <b>${site}</b> 吗？不可恢复。`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="doDelete('${site}')">删除</button>`);
         }
 
         async function doDelete(site) {
             closeModal();
             showToast('删除中...');
             delete configs[site];
-            await fetch('/stats?action=delete_site', { method: 'POST', body: JSON.stringify({site})});
+            await fetch('/stats?action=delete_site', { method: 'POST', body: JSON.stringify({site}) });
             renderSites();
             closeEdit();
-            showToast('已成功删除');
+            showToast('已删除');
         }
 
         function genLinkFromEdit() {
             const site = document.getElementById('e-site-id').value;
-            showToast('正在生成...', 800);
-            setTimeout(() => {
-                const code = `<div id="cf-stat"></div>\n<script async src="${window.location.origin}/stats?action=script&site=${site}"><\/script>`;
-                const escCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                openModal('专属统计代码', 
-                `<div class="code-preview">${escCode}</div>
-                 <div class="code-tip">复制上方代码并粘贴到网站 HTML 内部即可</div>`,
-                `<button class="btn btn-outline" onclick="closeModal()">关闭</button>
-                 <button class="btn btn-primary" onclick="copyCode('${site}')">复制完整代码</button>`);
-            }, 800);
+            const code = `<div id="cf-stat"></div>\n<script async src="${window.location.origin}/stats?action=script&site=${site}"><\/script>`;
+            openModal('专属统计代码', `<div class="code-preview">${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`, `<button class="btn btn-outline" onclick="closeModal()">关闭</button><button class="btn btn-primary" onclick="copyCode('${site}')">复制</button>`);
         }
 
         function copyCode(site) {
             const code = `<div id="cf-stat"></div>\n<script async src="${window.location.origin}/stats?action=script&site=${site}"><\/script>`;
             navigator.clipboard.writeText(code);
             closeModal();
-            showToast('复制成功！');
+            showToast('已复制');
         }
 
         bootSys();
