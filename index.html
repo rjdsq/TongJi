@@ -9,12 +9,15 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg); color: var(--text-m); margin: 0; overflow: hidden; height: 100vh; }
         
-        .header { background: var(--card); padding: 15px; font-size: 18px; font-weight: 600; text-align: center; border-bottom: 1px solid var(--border); position: relative; z-index: 10; padding-top: calc(15px + env(safe-area-inset-top)); }
+        .header { background: var(--card); padding: 15px; font-size: 18px; font-weight: 600; text-align: center; border-bottom: 1px solid var(--border); position: relative; z-index: 20; padding-top: calc(15px + env(safe-area-inset-top)); transition: 0.3s; }
+        .header .btn-back { position: absolute; left: 15px; bottom: 15px; font-size: 15px; color: var(--primary); font-weight: 500; display: none; cursor: pointer; }
         
-        .view-container { position: relative; height: calc(100vh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overflow-x: hidden; }
-        .view { display: none; padding: 20px; animation: fadeIn 0.3s; }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .view-container { position: relative; height: calc(100vh - 55px - env(safe-area-inset-top)); overflow: hidden; }
+        .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 20px; padding-bottom: 90px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .view.active { opacity: 1; pointer-events: auto; }
+        
+        #view-edit { transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); background: var(--bg); z-index: 30; opacity: 1; pointer-events: auto; padding-bottom: 40px; }
+        #view-edit.show { transform: translateX(0); }
 
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 10; box-shadow: 0 -4px 15px rgba(0,0,0,0.02); }
         .nav-item { text-align: center; color: var(--text-l); font-size: 11px; flex: 1; padding: 8px 0; cursor: pointer; transition: 0.2s; }
@@ -23,101 +26,146 @@
         .nav-item.active .nav-icon { filter: grayscale(0); opacity: 1; }
 
         .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid var(--border); }
-        .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px; font-weight: 600; }
-        .action-row { display: flex; gap: 10px; margin-top: 15px; }
+        .card-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
         
-        .btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.2s; }
+        .site-card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); transition: 0.1s; cursor: pointer; }
+        .site-card:active { transform: scale(0.98); }
+        .site-domain { font-size: 18px; font-weight: 600; margin-bottom: 5px; color: var(--text-m); }
+        .site-stats { font-size: 12px; color: var(--text-l); }
+        .site-arrow { color: var(--primary); font-size: 18px; }
+
+        .fab { position: fixed; bottom: 80px; right: 20px; width: 54px; height: 54px; background: var(--primary); border-radius: 27px; display: flex; justify-content: center; align-items: center; color: white; font-size: 28px; box-shadow: 0 6px 16px rgba(160, 181, 166, 0.4); z-index: 15; cursor: pointer; transition: 0.2s; }
+        .fab:active { transform: scale(0.9); }
+
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.2s; margin-bottom: 15px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-danger { background: #fafafa; color: var(--danger); border: 1px solid var(--danger); }
         .btn-outline { background: #fafafa; border: 1px solid var(--border); color: var(--text-m); }
         .btn:active { transform: scale(0.97); }
 
         .form-group { margin-bottom: 15px; }
-        .label { font-size: 12px; color: var(--text-l); margin-bottom: 6px; display: flex; justify-content: space-between; }
-        input, select { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 10px; font-size: 14px; color: var(--text-m); outline: none; }
+        .label { font-size: 12px; color: var(--text-l); margin-bottom: 6px; font-weight: 500; }
+        input, select { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-size: 14px; color: var(--text-m); outline: none; }
+        input:focus { border-color: var(--primary); }
         
-        .toggle-group { display: flex; gap: 10px; background: var(--bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border); justify-content: space-between; }
-        .toggle-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-m); }
+        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
+        .toggle-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-m); }
         input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
 
         .tpl-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .tpl-btn { height: 35px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); display: flex; justify-content: center; align-items: center; font-size: 12px; color: var(--text-l); cursor: pointer; }
-        .tpl-btn.selected { border-color: var(--primary); color: var(--primary); background: #ffffff; font-weight: bold; }
+        .tpl-btn { height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); display: flex; justify-content: center; align-items: center; font-size: 12px; color: var(--text-l); cursor: pointer; transition: 0.2s; }
+        .tpl-btn.selected { border-color: var(--primary); color: var(--primary); background: #eef4f0; font-weight: 600; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: var(--card); width: 85%; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transform: scale(0.95); opacity: 0; transition: 0.2s; }
+        .modal { background: var(--card); width: 85%; max-width: 400px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transform: scale(0.95); opacity: 0; transition: 0.2s; }
         .modal.show { transform: scale(1); opacity: 1; }
         .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; text-align: center; }
-        .modal-body { font-size: 14px; color: var(--text-l); margin-bottom: 25px; text-align: center; }
+        .modal-body { font-size: 14px; color: var(--text-l); margin-bottom: 25px; text-align: center; line-height: 1.5; }
+        .action-row { display: flex; gap: 10px; }
         
-        .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 15px 25px; border-radius: 12px; font-size: 14px; display: none; z-index: 200; }
+        .toast { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; display: none; z-index: 200; font-weight: 500; white-space: nowrap; }
         
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-box { background: var(--bg); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid var(--border); }
-        .stat-val { font-size: 20px; font-weight: bold; color: var(--text-m); margin-top: 5px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .stat-box { background: var(--bg); padding: 18px 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 24px; font-weight: bold; color: var(--text-m); margin-top: 6px; }
     </style>
 </head>
 <body>
 
-    <div class="header" id="sys-title">系统加载中...</div>
+    <div class="header">
+        <div class="btn-back" id="btn-back" onclick="closeEdit()">＜ 返回</div>
+        <span id="sys-title">流动中枢</span>
+    </div>
 
     <div class="view-container">
+        
         <div id="tab-tpl" class="view">
             <div class="card">
-                <div class="card-header">全局模板预设字典</div>
-                <div style="font-size:12px; color:var(--text-l); line-height:1.6;">系统内置 10 套莫兰迪独立排版引擎。您无需在此操作，请直接在「网站管理」编辑状态下，为不同站点指派相应编号即可。</div>
-                <div class="tpl-grid" style="margin-top:15px; pointer-events:none;">
-                    <div class="tpl-btn selected">1燕麦</div><div class="tpl-btn">2纯白</div><div class="tpl-btn">3灰绿</div><div class="tpl-btn">4藕荷</div><div class="tpl-btn">5灰蓝</div>
-                    <div class="tpl-btn">6极夜</div><div class="tpl-btn">7暗礁</div><div class="tpl-btn">8粉霜</div><div class="tpl-btn">9森系</div><div class="tpl-btn">10全透</div>
+                <div class="card-header">系统级莫兰迪排版引擎</div>
+                <div style="font-size:12px; color:var(--text-l); line-height:1.6;">云端已封装 10 套独立渲染层。请在具体网站的配置面板中直接指派，此处仅供查阅。</div>
+                <div class="tpl-grid" style="margin-top:20px; pointer-events:none;">
+                    <div class="tpl-btn selected">1 燕麦</div><div class="tpl-btn">2 纯白</div><div class="tpl-btn">3 灰绿</div><div class="tpl-btn">4 藕荷</div><div class="tpl-btn">5 灰蓝</div>
+                    <div class="tpl-btn">6 极夜</div><div class="tpl-btn">7 暗礁</div><div class="tpl-btn">8 粉霜</div><div class="tpl-btn">9 森系</div><div class="tpl-btn">10 透骨</div>
                 </div>
             </div>
         </div>
 
         <div id="tab-site" class="view active">
-            <button class="btn btn-primary" style="margin-bottom:20px;" onclick="addSite()">+ 部署新网站</button>
             <div id="site-list"></div>
+            <div class="fab" onclick="addSite()">+</div>
         </div>
 
         <div id="tab-stat" class="view">
             <div class="form-group">
-                <select id="stat-selector" onchange="loadStats()"><option value="">请选择要查看的网站</option></select>
+                <select id="stat-selector" onchange="loadStats()"><option value="">请选择数据源终端</option></select>
             </div>
             <div class="card" id="stat-board" style="display:none;">
-                <div class="card-header"><span id="stat-site-name"></span> 数据大盘</div>
+                <div class="card-header"><span id="stat-site-name"></span> 实时追踪流</div>
                 <div class="stat-grid">
-                    <div class="stat-box"><div class="label" style="justify-content:center;">总阅读量</div><div class="stat-val" id="sv-pv">0</div></div>
-                    <div class="stat-box"><div class="label" style="justify-content:center;">总访客数</div><div class="stat-val" id="sv-uv">0</div></div>
-                    <div class="stat-box"><div class="label" style="justify-content:center;">今日足迹</div><div class="stat-val" id="sv-dpv">0</div></div>
-                    <div class="stat-box"><div class="label" style="justify-content:center;">今日新客</div><div class="stat-val" id="sv-duv">0</div></div>
+                    <div class="stat-box"><div class="label" style="justify-content:center;">历史总览 (PV)</div><div class="stat-val" id="sv-pv">0</div></div>
+                    <div class="stat-box"><div class="label" style="justify-content:center;">独立标识 (UV)</div><div class="stat-val" id="sv-uv">0</div></div>
+                    <div class="stat-box"><div class="label" style="justify-content:center;">今日交互 (PV)</div><div class="stat-val" id="sv-dpv">0</div></div>
+                    <div class="stat-box"><div class="label" style="justify-content:center;">今日新客 (UV)</div><div class="stat-val" id="sv-duv">0</div></div>
                 </div>
             </div>
         </div>
 
         <div id="tab-sys" class="view">
             <div class="card">
-                <div class="card-header">危险区域</div>
-                <div style="font-size:12px; color:var(--text-l); margin-bottom:15px;">该操作将不可逆地清除云端数据库中记录的所有站点配置。统计数据也会脱离绑定。</div>
-                <button class="btn btn-danger" onclick="confirmClear()">格式化系统环境</button>
-            </div>
-            <div class="card" style="opacity: 0.5;">
-                <div class="card-header">进阶模块 (待解锁)</div>
-                <div style="font-size:12px;">导出报表 (Excel/CSV)</div><br>
-                <div style="font-size:12px;">全局安全 Token</div>
+                <div class="card-header">格式化协议</div>
+                <div style="font-size:12px; color:var(--text-l); margin-bottom:20px; line-height:1.6;">执行此操作将抹除云端所有已绑定的站点实例。探针将立即失效，不可逆转。</div>
+                <button class="btn btn-danger" style="margin-bottom:0;" onclick="confirmClear()">格式化系统环境</button>
             </div>
         </div>
+
+        <div id="view-edit">
+            <div class="card" style="border:none; box-shadow:none; padding-top:5px;">
+                <input type="hidden" id="e-site-id">
+                
+                <div class="label">模块渲染开关</div>
+                <div class="toggle-group form-group">
+                    <label class="toggle-item"><input type="checkbox" id="e-t-pv"> PV 渲染</label>
+                    <label class="toggle-item"><input type="checkbox" id="e-t-uv"> UV 渲染</label>
+                    <label class="toggle-item"><input type="checkbox" id="e-t-dpv"> 今日 PV</label>
+                    <label class="toggle-item"><input type="checkbox" id="e-t-duv"> 今日 UV</label>
+                </div>
+
+                <div class="label">云端分配模板</div>
+                <div class="tpl-grid form-group" id="e-tpl-grid">
+                    <div class="tpl-btn" onclick="selectTpl(1)">1</div><div class="tpl-btn" onclick="selectTpl(2)">2</div><div class="tpl-btn" onclick="selectTpl(3)">3</div><div class="tpl-btn" onclick="selectTpl(4)">4</div><div class="tpl-btn" onclick="selectTpl(5)">5</div>
+                    <div class="tpl-btn" onclick="selectTpl(6)">6</div><div class="tpl-btn" onclick="selectTpl(7)">7</div><div class="tpl-btn" onclick="selectTpl(8)">8</div><div class="tpl-btn" onclick="selectTpl(9)">9</div><div class="tpl-btn" onclick="selectTpl(10)">10</div>
+                </div>
+
+                <div style="display:flex; gap:12px;">
+                    <div class="form-group" style="flex:1;"><div class="label">总 PV 语义</div><input type="text" id="e-v-pv"></div>
+                    <div class="form-group" style="flex:1;"><div class="label">总 UV 语义</div><input type="text" id="e-v-uv"></div>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <div class="form-group" style="flex:1;"><div class="label">今 PV 语义</div><input type="text" id="e-v-dpv"></div>
+                    <div class="form-group" style="flex:1;"><div class="label">今 UV 语义</div><input type="text" id="e-v-duv"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveEdit()">同步至云端节点</button>
+                <div class="action-row">
+                    <button class="btn btn-outline" onclick="genLinkFromEdit()">部署链接</button>
+                    <button class="btn btn-danger" onclick="confirmDeleteFromEdit()">销毁实例</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item" onclick="switchTab('tpl')"><span class="nav-icon">🎨</span>模板管理</div>
+        <div class="nav-item" onclick="switchTab('tpl')"><span class="nav-icon">🎨</span>全局引擎</div>
         <div class="nav-item active" onclick="switchTab('site')"><span class="nav-icon">🌐</span>网站管理</div>
-        <div class="nav-item" onclick="switchTab('stat')"><span class="nav-icon">📊</span>统计数据</div>
-        <div class="nav-item" onclick="switchTab('sys')"><span class="nav-icon">⚙️</span>系统设置</div>
+        <div class="nav-item" onclick="switchTab('stat')"><span class="nav-icon">📊</span>数据透视</div>
+        <div class="nav-item" onclick="switchTab('sys')"><span class="nav-icon">⚙️</span>系统环境</div>
     </div>
 
     <div class="modal-overlay" id="overlay">
         <div class="modal" id="modal">
             <div class="modal-title" id="md-title">提示</div>
-            <div class="modal-body" id="md-body">内容</div>
+            <div class="modal-body" id="md-body"></div>
             <div class="action-row" id="md-actions"></div>
         </div>
     </div>
@@ -126,7 +174,8 @@
 
     <script>
         let configs = {};
-        const titles = { tpl: '界面渲染引擎', site: '集群站点终端', stat: '多维数据面板', sys: '核心环境配置' };
+        const titles = { tpl: '排版引擎集群', site: '流动管理终端', stat: '数据透视矩阵', sys: '核心环境协议' };
+        let activeTpl = 1;
 
         function switchTab(tab) {
             document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
@@ -134,11 +183,10 @@
             document.getElementById('tab-' + tab).classList.add('active');
             event.currentTarget.classList.add('active');
             document.getElementById('sys-title').innerText = titles[tab];
-            
             if(tab === 'stat') refreshStatSelector();
         }
 
-        function showToast(msg, ms=1500) {
+        function showToast(msg, ms=2000) {
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.style.display = 'block';
@@ -162,6 +210,8 @@
         }
 
         async function initLoad() {
+            const list = document.getElementById('site-list');
+            list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:50px;">握手云端数据...</div>';
             const res = await fetch('/stats?action=get_configs');
             configs = await res.json();
             document.getElementById('sys-title').innerText = titles.site;
@@ -172,137 +222,178 @@
             const list = document.getElementById('site-list');
             list.innerHTML = '';
             for (let site in configs) {
-                const c = configs[site];
                 list.innerHTML += `
-                <div class="card" id="card-${site}">
-                    <div class="card-header"><span>标识: ${site}</span><span style="color:var(--primary);">模板 TPL-${c.tpl}</span></div>
-                    
-                    <div class="label">模块展示开关</div>
-                    <div class="toggle-group form-group">
-                        <label class="toggle-item"><input type="checkbox" id="t-pv-${site}" ${c.shows.pv?'checked':''}> PV</label>
-                        <label class="toggle-item"><input type="checkbox" id="t-uv-${site}" ${c.shows.uv?'checked':''}> UV</label>
-                        <label class="toggle-item"><input type="checkbox" id="t-dpv-${site}" ${c.shows.dpv?'checked':''}> 今PV</label>
-                        <label class="toggle-item"><input type="checkbox" id="t-duv-${site}" ${c.shows.duv?'checked':''}> 今UV</label>
+                <div class="site-card" onclick="openEdit('${site}')">
+                    <div>
+                        <div class="site-domain">站点标识: ${site}</div>
+                        <div class="site-stats">使用模板 TPL-${configs[site].tpl || 1} · 点击进入配置</div>
                     </div>
-
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1;"><div class="label">PV 文案</div><input type="text" id="v-pv-${site}" value="${c.pv}"></div>
-                        <div class="form-group" style="flex:1;"><div class="label">UV 文案</div><input type="text" id="v-uv-${site}" value="${c.uv}"></div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <div class="form-group" style="flex:1;"><div class="label">今 PV 文案</div><input type="text" id="v-dpv-${site}" value="${c.dpv}"></div>
-                        <div class="form-group" style="flex:1;"><div class="label">今 UV 文案</div><input type="text" id="v-duv-${site}" value="${c.duv}"></div>
-                    </div>
-                    
-                    <div class="label">分配模板编号 (1-10)</div>
-                    <select id="v-tpl-${site}" class="form-group">
-                        ${[1,2,3,4,5,6,7,8,9,10].map(i => `<option value="${i}" ${c.tpl==i?'selected':''}>模板 ${i}</option>`).join('')}
-                    </select>
-
-                    <div class="action-row">
-                        <button class="btn btn-outline" onclick="saveSite('${site}')">保存配置</button>
-                        <button class="btn btn-primary" onclick="genLink('${site}')">获取链接</button>
-                        <button class="btn btn-danger" style="flex:0.5;" onclick="confirmDelete('${site}')">移除</button>
-                    </div>
+                    <div class="site-arrow">＞</div>
                 </div>`;
+            }
+            if (Object.keys(configs).length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:80px; line-height:1.8;">暂无接管实例<br>轻触右下角悬浮球部署新应用</div>';
             }
         }
 
-        function addSite() {
+        async function addSite() {
             let keys = Object.keys(configs);
             let nextId = 1;
             if (keys.length > 0) {
                 let nums = keys.map(k => parseInt(k)).filter(n => !isNaN(n));
                 if (nums.length > 0) nextId = Math.max(...nums) + 1;
             }
-            configs[nextId.toString()] = { tpl: 1, pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
-            renderSites();
-            setTimeout(() => document.getElementById(`card-${nextId}`).scrollIntoView({behavior: "smooth"}), 100);
-        }
-
-        async function saveSite(site) {
-            configs[site].pv = document.getElementById(`v-pv-${site}`).value;
-            configs[site].uv = document.getElementById(`v-uv-${site}`).value;
-            configs[site].dpv = document.getElementById(`v-dpv-${site}`).value;
-            configs[site].duv = document.getElementById(`v-duv-${site}`).value;
-            configs[site].tpl = parseInt(document.getElementById(`v-tpl-${site}`).value);
-            configs[site].shows = {
-                pv: document.getElementById(`t-pv-${site}`).checked,
-                uv: document.getElementById(`t-uv-${site}`).checked,
-                dpv: document.getElementById(`t-dpv-${site}`).checked,
-                duv: document.getElementById(`t-duv-${site}`).checked
-            };
+            const site = nextId.toString();
             
+            showToast('实例初始化中...');
+            
+            configs[site] = { tpl: 1, pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
             await fetch('/stats?action=save_config', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({site: site, ...configs[site]})
             });
-            showToast('参数已同步云端');
+            
             renderSites();
+            openEdit(site);
         }
 
-        function confirmDelete(site) {
-            openModal('移除预警', `确认从核心阵列中移除节点 <b>${site}</b> 吗？相关挂载代码将失效。`, 
-            `<button class="btn btn-outline" onclick="closeModal()">取消操作</button>
-             <button class="btn btn-danger" onclick="doDelete('${site}')">确认抹除</button>`);
+        function selectTpl(num) {
+            activeTpl = num;
+            const btns = document.getElementById('e-tpl-grid').children;
+            for(let i=0; i<btns.length; i++) {
+                if(i+1 === num) btns[i].classList.add('selected');
+                else btns[i].classList.remove('selected');
+            }
+        }
+
+        function openEdit(site) {
+            const c = configs[site];
+            document.getElementById('e-site-id').value = site;
+            
+            document.getElementById('e-t-pv').checked = c.shows.pv;
+            document.getElementById('e-t-uv').checked = c.shows.uv;
+            document.getElementById('e-t-dpv').checked = c.shows.dpv;
+            document.getElementById('e-t-duv').checked = c.shows.duv;
+            
+            document.getElementById('e-v-pv').value = c.pv;
+            document.getElementById('e-v-uv').value = c.uv;
+            document.getElementById('e-v-dpv').value = c.dpv;
+            document.getElementById('e-v-duv').value = c.duv;
+            
+            selectTpl(parseInt(c.tpl) || 1);
+
+            document.getElementById('sys-title').innerText = `配置 [ ${site} ]`;
+            document.getElementById('btn-back').style.display = 'block';
+            document.getElementById('view-edit').classList.add('show');
+        }
+
+        function closeEdit() {
+            document.getElementById('view-edit').classList.remove('show');
+            document.getElementById('btn-back').style.display = 'none';
+            document.getElementById('sys-title').innerText = titles.site;
+        }
+
+        async function saveEdit() {
+            const site = document.getElementById('e-site-id').value;
+            configs[site] = {
+                tpl: activeTpl,
+                pv: document.getElementById('e-v-pv').value,
+                uv: document.getElementById('e-v-uv').value,
+                dpv: document.getElementById('e-v-dpv').value,
+                duv: document.getElementById('e-v-duv').value,
+                shows: {
+                    pv: document.getElementById('e-t-pv').checked,
+                    uv: document.getElementById('e-t-uv').checked,
+                    dpv: document.getElementById('e-t-dpv').checked,
+                    duv: document.getElementById('e-t-duv').checked
+                }
+            };
+            
+            showToast('同步云端节点...');
+            await fetch('/stats?action=save_config', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({site: site, ...configs[site]})
+            });
+            
+            renderSites();
+            showToast('云端协议已更新');
+            closeEdit();
+        }
+
+        function confirmDeleteFromEdit() {
+            const site = document.getElementById('e-site-id').value;
+            openModal('实例销毁验证', `正在请求剥离节点 <b>${site}</b> 的控制权。此操作不可逆。`, 
+            `<button class="btn btn-outline" onclick="closeModal()">撤销操作</button>
+             <button class="btn btn-danger" onclick="doDelete('${site}')">强制销毁</button>`);
         }
 
         async function doDelete(site) {
             closeModal();
+            showToast('正在降级节点...');
             delete configs[site];
-            renderSites();
             await fetch('/stats?action=delete_site', { method: 'POST', body: JSON.stringify({site})});
+            renderSites();
+            closeEdit();
+            showToast('实例已从系统中抹除');
         }
 
-        function genLink(site) {
-            showToast('引擎生成中...');
+        function genLinkFromEdit() {
+            const site = document.getElementById('e-site-id').value;
+            showToast('编译探针脚本中...', 1000);
             setTimeout(() => {
                 const code = `<div id="cf-stat"></div>\n<script async src="${window.location.origin}/stats?action=script&site=${site}"><\/script>`;
                 const escCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                openModal('分发接入代码', 
-                `<div style="background:#fafafa; border:1px solid #ece9e0; padding:15px; border-radius:8px; font-family:monospace; font-size:12px; word-break:break-all; text-align:left;">${escCode}</div>`,
-                `<button class="btn btn-outline" onclick="closeModal()">取消</button>
-                 <button class="btn btn-primary" onclick="copyCode(\`${code}\`)">一键拷贝代码</button>`);
-            }, 600);
+                openModal('分发探针链接', 
+                `<div style="background:#fafafa; border:1px solid var(--border); padding:15px; border-radius:10px; font-family:monospace; font-size:12px; word-break:break-all; text-align:left; color:var(--text-m);">${escCode}</div>`,
+                `<button class="btn btn-outline" onclick="closeModal()">稍后配置</button>
+                 <button class="btn btn-primary" onclick="copyCode(\`${code}\`)">拷贝指令并退出</button>`);
+            }, 1000);
         }
 
         function copyCode(str) {
             navigator.clipboard.writeText(str);
             closeModal();
-            setTimeout(() => showToast('核心代码已入库 (剪贴板)'), 300);
+            closeEdit();
+            setTimeout(() => showToast('指令已被存入剪贴板'), 400);
         }
 
         function refreshStatSelector() {
             const sel = document.getElementById('stat-selector');
-            sel.innerHTML = '<option value="">轻触切换数据源</option>';
-            for(let s in configs) sel.innerHTML += `<option value="${s}">网域: ${s}</option>`;
+            sel.innerHTML = '<option value="">轻触指派监听节点</option>';
+            for(let s in configs) sel.innerHTML += `<option value="${s}">节点雷达: ${s}</option>`;
             document.getElementById('stat-board').style.display = 'none';
         }
 
         async function loadStats() {
             const site = document.getElementById('stat-selector').value;
             if(!site) return document.getElementById('stat-board').style.display = 'none';
-            document.getElementById('stat-site-name').innerText = site;
+            
+            document.getElementById('stat-site-name').innerText = `[ ${site} ]`;
+            document.getElementById('sv-pv').innerText = '...';
+            document.getElementById('sv-uv').innerText = '...';
+            document.getElementById('sv-dpv').innerText = '...';
+            document.getElementById('sv-duv').innerText = '...';
+            document.getElementById('stat-board').style.display = 'block';
+
             const res = await fetch(`/stats?action=get_stats&site=${site}`);
             const data = await res.json();
             document.getElementById('sv-pv').innerText = data.pv;
             document.getElementById('sv-uv').innerText = data.uv;
             document.getElementById('sv-dpv').innerText = data.dpv;
             document.getElementById('sv-duv').innerText = data.duv;
-            document.getElementById('stat-board').style.display = 'block';
         }
 
         function confirmClear() {
-            openModal('系统级销毁警告', '<span style="color:var(--danger);">正在尝试销毁系统环境变量字典，此操作直接作用于底层 KV。是否继续？</span>',
-            `<button class="btn btn-outline" onclick="closeModal()">终止执行</button>
-             <button class="btn btn-danger" onclick="doClear()">确认执行破坏</button>`);
+            openModal('危险协议', '触发此协议将切断所有站点的遥测探针，云端实例清单将被清空。',
+            `<button class="btn btn-outline" onclick="closeModal()">中止执行</button>
+             <button class="btn btn-danger" onclick="doClear()">执行覆盖指令</button>`);
         }
 
         async function doClear() {
             closeModal();
-            showToast('底层重构中...', 2000);
+            showToast('底层系统重置中...', 2000);
             await fetch('/stats?action=clear_all', { method: 'POST' });
             configs = {};
             renderSites();
+            showToast('系统已恢复至初始态');
         }
 
         initLoad();
