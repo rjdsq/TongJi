@@ -79,6 +79,7 @@ export async function onRequest(context) {
         const conf = allConfigs[site] || { 
             tpl: 1, scale: 1, offsetX: 0, layout: 'row', 
             useCustom: false, colors: { box: 'transparent', item: '#f9f7f2', lbl: '#a5acaa', val: '#788583' },
+            padBox: 0.6, padItem: 0.6,
             order: ['pv', 'uv', 'dpv', 'duv'],
             pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', 
             shows: {pv:true, uv:true, dpv:true, duv:true} 
@@ -121,6 +122,9 @@ export async function onRequest(context) {
         const itemFlex = isGrid ? '0 0 calc(50% - 4px)' : '0 0 auto';
         const flexWrap = isGrid ? 'wrap' : 'nowrap';
         const offsetX = conf.offsetX || 0;
+        
+        const pb = conf.padBox !== undefined ? conf.padBox : 0.6;
+        const pi = conf.padItem !== undefined ? conf.padItem : 0.6;
 
         const shows = conf.shows || {pv:true, uv:true, dpv:true, duv:true};
 
@@ -143,11 +147,11 @@ export async function onRequest(context) {
             for (let i = 0; i < orderArr.length; i++) {
                 const key = orderArr[i];
                 if (confShows[key]) {
-                    items.push(\`<div style="flex:${itemFlex}; min-width:50px; background:${t.bg}; padding:0.6em 0.8em; border-radius:0.6em; border:1px solid ${t.border}; box-sizing:border-box; text-align:center;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${confNames[key]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">\${resData[key]}</div></div>\`);
+                    items.push(\`<div style="flex:${itemFlex}; min-width:50px; background:${t.bg}; padding:${pi}em ${pi*1.2}em; border-radius:${pi}em; border:1px solid ${t.border}; box-sizing:border-box; text-align:center;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${confNames[key]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">\${resData[key]}</div></div>\`);
                 }
             }
 
-            const paddingBox = '${t.box}' !== 'transparent' ? 'padding:0.6em; border-radius:0.8em;' : '';
+            const paddingBox = '${t.box}' !== 'transparent' ? \`padding:${pb}em; border-radius:${pb*1.2}em;\` : '';
             container.innerHTML = \`<div style="display:flex; justify-content:center; width:100%;"><div style="display:flex; flex-wrap:${flexWrap}; gap:8px; justify-content:center; background:${t.box}; \${paddingBox} transform:translateX(${offsetX}%); font-family:-apple-system,sans-serif; font-size:\${${baseSize}}px; line-height:1; width:max-content; max-width:100%; box-sizing:border-box;">\${items.join('')}</div></div>\`;
         })();`;
         return new Response(trackerJs, { headers: { "Content-Type": "application/javascript", ...corsHeaders } });
