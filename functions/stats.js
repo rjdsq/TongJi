@@ -77,83 +77,63 @@ export async function onRequest(context) {
 
     if (action === 'script') {
         const conf = allConfigs[site] || { 
-            tpl: 1, scale: 1, offsetX: 0, layout: 'row', 
-            useCustom: false, colors: { box: 'transparent', item: '#f9f7f2', lbl: '#a5acaa', val: '#788583' },
-            padBox: 0.6, padItemX: 0.8, padItemY: 0.6,
-            order: ['pv', 'uv', 'dpv', 'duv'],
-            pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', 
-            shows: {pv:true, uv:true, dpv:true, duv:true} 
+            position: 'bottom-left', brand: '#8da493',
+            shows: {pv:true, uv:true, online:true, geo:true, dev:true} 
         };
-        
-        const templates = {
-            1: { box: 'transparent', bg: '#f9f7f2', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' },
-            2: { box: 'transparent', bg: '#ffffff', border: '#f4f1eb', val: '#5c5c5c', lbl: '#a0b5a6' },
-            3: { box: 'transparent', bg: '#eef0ed', border: '#eef0ed', val: '#8da493', lbl: '#788583' },
-            4: { box: 'transparent', bg: '#f5f0ef', border: '#ece5e3', val: '#bca39f', lbl: '#a5acaa' },
-            5: { box: 'transparent', bg: '#f2f5f6', border: '#e8edf0', val: '#7f93a1', lbl: '#a5acaa' },
-            6: { box: 'transparent', bg: '#fafafa', border: '#333333', val: '#333333', lbl: '#666666' },
-            7: { box: 'transparent', bg: '#333333', border: '#333333', val: '#f9f7f2', lbl: '#a5acaa' },
-            8: { box: 'transparent', bg: '#f9f9f9', border: '#d0b8b4', val: '#d0b8b4', lbl: '#a5acaa' },
-            9: { box: 'transparent', bg: '#ffffff', border: '#a0b5a6', val: '#a0b5a6', lbl: '#a5acaa' },
-            10: { box: 'transparent', bg: 'transparent', border: 'transparent', val: '#788583', lbl: '#a5acaa' },
-            11: { box: 'transparent', bg: '#121212', border: '#00ffcc', val: '#00ffcc', lbl: '#009999' },
-            12: { box: 'transparent', bg: '#000000', border: '#39ff14', val: '#39ff14', lbl: '#228b22' },
-            13: { box: 'transparent', bg: '#f4ece6', border: '#e2d3c8', val: '#5c4033', lbl: '#8b7355' },
-            14: { box: 'transparent', bg: '#0a192f', border: '#172a45', val: '#64ffda', lbl: '#8892b0' },
-            15: { box: 'transparent', bg: '#fff0e6', border: '#ffdcb3', val: '#ff7f50', lbl: '#ff9966' },
-            16: { box: 'transparent', bg: '#1b2a22', border: '#253e30', val: '#a8d5ba', lbl: '#7eb08c' },
-            17: { box: 'transparent', bg: '#fff0f5', border: '#ffb6c1', val: '#ff69b4', lbl: '#ffc0cb' },
-            18: { box: 'transparent', bg: '#f8f8ff', border: '#e6e6fa', val: '#9370db', lbl: '#b0c4de' },
-            19: { box: 'transparent', bg: '#fff5ee', border: '#ffdab9', val: '#ff4500', lbl: '#ffa07a' },
-            20: { box: 'transparent', bg: '#ffffff', border: '#000000', val: '#000000', lbl: '#000000' }
-        };
-        
-        let t;
-        if (conf.useCustom && conf.colors) {
-            t = { box: conf.colors.box, bg: conf.colors.item, border: 'transparent', val: conf.colors.val, lbl: conf.colors.lbl };
-        } else {
-            t = templates[conf.tpl || 1] || templates[1];
-        }
 
-        const scale = conf.scale || 1;
-        const baseSize = 14 * scale; 
-        
-        const isGrid = conf.layout === 'grid';
-        const itemFlex = isGrid ? '0 0 calc(50% - 4px)' : '0 0 auto';
-        const flexWrap = isGrid ? 'wrap' : 'nowrap';
-        const offsetX = conf.offsetX || 0;
-        
-        const pb = conf.padBox !== undefined ? conf.padBox : 0.6;
-        const px = conf.padItemX !== undefined ? conf.padItemX : 0.8;
-        const py = conf.padItemY !== undefined ? conf.padItemY : 0.6;
-
-        const shows = conf.shows || {pv:true, uv:true, dpv:true, duv:true};
+        const posStyle = conf.position === 'bottom-right' ? 'bottom:20px; right:20px;' : 'bottom:20px; left:20px;';
+        const brandStr = conf.brand || '#8da493';
 
         const trackerJs = `
         (async function() {
-            const container = document.getElementById('cf-stat');
-            if (!container) return;
             const apiUrl = '${url.origin}/stats?action=track&site=${site}';
-            let resData = {};
+            let reqData = { url: window.location.href, ref: document.referrer };
+            let resData = { pv:0, uv:0, online:1, geo:'未知', os:'未知' };
             try {
-                const response = await fetch(apiUrl, { method: 'POST', body: JSON.stringify({ url: window.location.href }) });
+                const response = await fetch(apiUrl, { method: 'POST', body: JSON.stringify(reqData) });
                 resData = await response.json();
-            } catch(e) { return; }
+            } catch(e) {}
 
-            const confShows = ${JSON.stringify(shows)};
-            const confNames = {pv: '${conf.pv || '总访问'}', uv: '${conf.uv || '总访客'}', dpv: '${conf.dpv || '今日访问'}', duv: '${conf.duv || '今日访客'}'};
-            const orderArr = ${JSON.stringify(conf.order || ['pv', 'uv', 'dpv', 'duv'])};
+            const wrap = document.createElement('div');
+            wrap.id = 'cf-island-wrap';
             
-            let items = [];
-            for (let i = 0; i < orderArr.length; i++) {
-                const key = orderArr[i];
-                if (confShows[key]) {
-                    items.push(\`<div style="flex:${itemFlex}; min-width:50px; background:${t.bg}; padding:${py}em ${px}em; border-radius:${py}em; border:1px solid ${t.border}; box-sizing:border-box; text-align:center;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">\${confNames[key]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">\${resData[key]}</div></div>\`);
-                }
+            const css = \`
+            #cf-island-wrap { position:fixed; \${'${posStyle}'} z-index:2147483647; font-family:-apple-system,sans-serif; --b:\${'${brandStr}'}; }
+            .cf-island { display:flex; flex-direction:column; align-items:flex-start; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(0,0,0,0.08); border-radius:24px; padding:10px 14px; box-shadow:0 10px 30px rgba(0,0,0,0.08); color:#333; overflow:hidden; transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); cursor:pointer; min-width:80px; width:auto; height:44px; }
+            .cf-island:hover, .cf-island.expanded { height:auto; padding:16px; border-radius:20px; }
+            .cf-island-head { display:flex; align-items:center; gap:8px; white-space:nowrap; font-size:14px; font-weight:600; height:24px; width:100%; }
+            .cf-dot { width:8px; height:8px; background:var(--b); border-radius:50%; animation:cf-pulse 2s infinite; }
+            .cf-island-body { display:flex; flex-direction:column; gap:12px; margin-top:16px; opacity:0; transition:opacity 0.3s; width:100%; min-width:180px; }
+            .cf-island:hover .cf-island-body, .cf-island.expanded .cf-island-body { opacity:1; }
+            .cf-d-row { display:flex; justify-content:space-between; font-size:13px; border-bottom:1px dashed rgba(0,0,0,0.05); padding-bottom:6px; }
+            .cf-d-lbl { color:#777; }
+            .cf-d-val { font-weight:600; color:#111; }
+            @keyframes cf-pulse { 0% { box-shadow:0 0 0 0 rgba(141,164,147,0.7); } 70% { box-shadow:0 0 0 6px rgba(141,164,147,0); } 100% { box-shadow:0 0 0 0 rgba(141,164,147,0); } }
+            @media (prefers-color-scheme: dark) {
+                .cf-island { background:rgba(30,30,30,0.85); border-color:rgba(255,255,255,0.1); color:#eee; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+                .cf-d-row { border-color:rgba(255,255,255,0.08); }
+                .cf-d-lbl { color:#aaa; }
+                .cf-d-val { color:#fff; }
             }
+            \`;
+            
+            const style = document.createElement('style');
+            style.innerHTML = css;
+            document.head.appendChild(style);
 
-            const paddingBox = '${t.box}' !== 'transparent' ? \`padding:${pb}em; border-radius:${pb*1.2}em;\` : '';
-            container.innerHTML = \`<div style="display:flex; justify-content:center; width:100%;"><div style="display:flex; flex-wrap:${flexWrap}; gap:8px; justify-content:center; background:${t.box}; \${paddingBox} transform:translateX(${offsetX}%); font-family:-apple-system,sans-serif; font-size:\${${baseSize}}px; line-height:1; width:max-content; max-width:100%; box-sizing:border-box;">\${items.join('')}</div></div>\`;
+            const shows = ${JSON.stringify(conf.shows || {pv:true, uv:true, online:true, geo:true, dev:true})};
+            let bodyHtml = '';
+            if(shows.pv) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">总访问量</span><span class="cf-d-val">\${resData.pv}</span></div>\`;
+            if(shows.uv) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">独立访客</span><span class="cf-d-val">\${resData.uv}</span></div>\`;
+            if(shows.geo) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">您的方位</span><span class="cf-d-val">\${resData.geo}</span></div>\`;
+            if(shows.dev) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">访问终端</span><span class="cf-d-val">\${resData.os}</span></div>\`;
+
+            wrap.innerHTML = \`<div class="cf-island" onclick="this.classList.toggle('expanded')">
+                <div class="cf-island-head"><div class="cf-dot"></div>\${shows.online ? '脉搏 ' + resData.online : '环境检测'}</div>
+                <div class="cf-island-body">\${bodyHtml}</div>
+            </div>\`;
+            
+            document.body.appendChild(wrap);
         })();`;
         return new Response(trackerJs, { headers: { "Content-Type": "application/javascript", ...corsHeaders } });
     }
@@ -162,52 +142,88 @@ export async function onRequest(context) {
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
 
     if (action === 'track' && request.method === 'POST') {
-        const k_pv = `s_${site}_pv`;
-        const k_uv = `s_${site}_uv`;
-        const k_dpv = `s_${site}_dpv_${dateStr}`;
-        const k_duv = `s_${site}_duv_${dateStr}`;
-        const k_ipe = `s_${site}_ipe_${ip}`;
-        const k_ipt = `s_${site}_ipt_${dateStr}_${ip}`;
+        let reqData = { ref: '' };
+        try { reqData = await request.json(); } catch(e) {}
 
-        const [v_pv, v_uv, v_dpv, v_duv, v_ipe, v_ipt] = await Promise.all([
-            env.stat.get(k_pv), env.stat.get(k_uv), env.stat.get(k_dpv), env.stat.get(k_duv), env.stat.get(k_ipe), env.stat.get(k_ipt)
+        const ua = request.headers.get('user-agent') || '';
+        let os = '未知设备';
+        if (/windows/i.test(ua)) os = 'Windows';
+        else if (/mac os/i.test(ua)) os = 'macOS';
+        else if (/android/i.test(ua)) os = 'Android';
+        else if (/iphone|ipad/i.test(ua)) os = 'iOS';
+        
+        let refDomain = '直接访问';
+        if (reqData.ref) {
+            try { refDomain = new URL(reqData.ref).hostname; } catch(e) {}
+        }
+
+        const geo = request.cf && request.cf.country ? request.cf.country : '未知';
+
+        const k_daily = `s_${site}_d_${dateStr}`;
+        const k_total = `s_${site}_t`;
+        const k_online = `s_${site}_p_${ip}`;
+
+        let [dailyStr, totalStr] = await Promise.all([
+            env.stat.get(k_daily),
+            env.stat.get(k_total)
         ]);
 
-        let pv = parseInt(v_pv || "0") + 1;
-        let dpv = parseInt(v_dpv || "0") + 1;
-        let uv = parseInt(v_uv || "0");
-        let duv = parseInt(v_duv || "0");
-        const tasks = [env.stat.put(k_pv, pv.toString()), env.stat.put(k_dpv, dpv.toString(), { expirationTtl: 86400 * 30 })];
+        let daily = dailyStr ? JSON.parse(dailyStr) : { pv:0, uv:0, ips:[], os:{}, ref:{} };
+        let total = totalStr ? JSON.parse(totalStr) : { pv:0, uv:0, ips:[] };
 
-        if (!v_ipe) { uv++; tasks.push(env.stat.put(k_uv, uv.toString())); tasks.push(env.stat.put(k_ipe, "1")); }
-        if (!v_ipt) { duv++; tasks.push(env.stat.put(k_duv, duv.toString(), { expirationTtl: 86400 * 2 })); tasks.push(env.stat.put(k_ipt, "1", { expirationTtl: 86400 * 2 })); }
+        daily.pv++;
+        total.pv++;
+
+        if (!daily.ips.includes(ip)) {
+            daily.uv++;
+            daily.ips.push(ip);
+            daily.os[os] = (daily.os[os] || 0) + 1;
+            daily.ref[refDomain] = (daily.ref[refDomain] || 0) + 1;
+        }
+
+        if (!total.ips.includes(ip)) {
+            total.uv++;
+            total.ips.push(ip);
+        }
+
+        const tasks = [
+            env.stat.put(k_daily, JSON.stringify(daily), { expirationTtl: 86400 * 30 }),
+            env.stat.put(k_total, JSON.stringify(total)),
+            env.stat.put(k_online, Date.now().toString(), { expirationTtl: 300 })
+        ];
 
         waitUntil(Promise.all(tasks));
-        return new Response(JSON.stringify({ pv, uv, dpv, duv }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+
+        const listed = await env.stat.list({ prefix: `s_${site}_p_` });
+        const onlineCount = listed.keys.length || 1;
+
+        return new Response(JSON.stringify({ 
+            pv: total.pv, uv: total.uv, dpv: daily.pv, duv: daily.uv, 
+            online: onlineCount, geo: geo, os: os 
+        }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    if (action === 'get_all_stats') {
-        let result = { total: {pv:0, uv:0, dpv:0, duv:0}, sites: {} };
+    if (action === 'get_dashboard') {
+        const listed = await env.stat.list({ prefix: 's_' });
+        let result = { total: { pv:0, uv:0 }, sites: {} };
         const siteIds = Object.keys(allConfigs);
-        const promises = [];
+
         for (let s of siteIds) {
-            promises.push(env.stat.get(`s_${s}_pv`));
-            promises.push(env.stat.get(`s_${s}_uv`));
-            promises.push(env.stat.get(`s_${s}_dpv_${dateStr}`));
-            promises.push(env.stat.get(`s_${s}_duv_${dateStr}`));
-        }
-        const values = await Promise.all(promises);
-        let idx = 0;
-        for (let s of siteIds) {
-            let pv = parseInt(values[idx++] || "0");
-            let uv = parseInt(values[idx++] || "0");
-            let dpv = parseInt(values[idx++] || "0");
-            let duv = parseInt(values[idx++] || "0");
-            result.sites[s] = {pv, uv, dpv, duv};
-            result.total.pv += pv;
-            result.total.uv += uv;
-            result.total.dpv += dpv;
-            result.total.duv += duv;
+            let totalStr = await env.stat.get(`s_${s}_t`);
+            let dailyStr = await env.stat.get(`s_${s}_d_${dateStr}`);
+            
+            let t = totalStr ? JSON.parse(totalStr) : {pv:0, uv:0};
+            let d = dailyStr ? JSON.parse(dailyStr) : {pv:0, uv:0, os:{}, ref:{}};
+            
+            let onlineList = await env.stat.list({ prefix: `s_${s}_p_` });
+            
+            result.sites[s] = {
+                pv: t.pv, uv: t.uv, dpv: d.pv, duv: d.uv, 
+                online: onlineList.keys.length,
+                os: d.os, ref: d.ref
+            };
+            result.total.pv += t.pv;
+            result.total.uv += t.uv;
         }
         return new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
