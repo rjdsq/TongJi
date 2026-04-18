@@ -27,11 +27,8 @@ export async function onRequest(context) {
     if (action === 'save_sys' && request.method === 'POST') {
         let data = {};
         try { data = await request.json(); } catch(e) {}
-        if (data.pwd) {
-            await env.stat.put('sys_pwd', data.pwd);
-        } else {
-            await env.stat.delete('sys_pwd');
-        }
+        if (data.pwd) await env.stat.put('sys_pwd', data.pwd);
+        else await env.stat.delete('sys_pwd');
         return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
@@ -76,64 +73,25 @@ export async function onRequest(context) {
     }
 
     if (action === 'script') {
-        const conf = allConfigs[site] || { 
-            position: 'bottom-left', brand: '#8da493',
-            shows: {pv:true, uv:true, online:true, geo:true, dev:true} 
-        };
-
-        const posStyle = conf.position === 'bottom-right' ? 'bottom:20px; right:20px;' : 'bottom:20px; left:20px;';
-        const brandStr = conf.brand || '#8da493';
-
+        const conf = allConfigs[site] || { mode: 'invisible', theme: 'light' };
+        
         const trackerJs = `
-        (async function() {
-            const apiUrl = '${url.origin}/stats?action=track&site=${site}';
-            let reqData = { url: window.location.href, ref: document.referrer };
-            let resData = { pv:0, uv:0, online:1, geo:'未知', os:'未知' };
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', body: JSON.stringify(reqData) });
-                resData = await response.json();
-            } catch(e) {}
-
-            const wrap = document.createElement('div');
-            wrap.id = 'cf-island-wrap';
-            
-            const css = \`
-            #cf-island-wrap { position:fixed; \${'${posStyle}'} z-index:2147483647; font-family:-apple-system,sans-serif; --b:\${'${brandStr}'}; }
-            .cf-island { display:flex; flex-direction:column; align-items:flex-start; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(0,0,0,0.08); border-radius:24px; padding:10px 14px; box-shadow:0 10px 30px rgba(0,0,0,0.08); color:#333; overflow:hidden; transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); cursor:pointer; min-width:80px; width:auto; height:44px; }
-            .cf-island:hover, .cf-island.expanded { height:auto; padding:16px; border-radius:20px; }
-            .cf-island-head { display:flex; align-items:center; gap:8px; white-space:nowrap; font-size:14px; font-weight:600; height:24px; width:100%; }
-            .cf-dot { width:8px; height:8px; background:var(--b); border-radius:50%; animation:cf-pulse 2s infinite; }
-            .cf-island-body { display:flex; flex-direction:column; gap:12px; margin-top:16px; opacity:0; transition:opacity 0.3s; width:100%; min-width:180px; }
-            .cf-island:hover .cf-island-body, .cf-island.expanded .cf-island-body { opacity:1; }
-            .cf-d-row { display:flex; justify-content:space-between; font-size:13px; border-bottom:1px dashed rgba(0,0,0,0.05); padding-bottom:6px; }
-            .cf-d-lbl { color:#777; }
-            .cf-d-val { font-weight:600; color:#111; }
-            @keyframes cf-pulse { 0% { box-shadow:0 0 0 0 rgba(141,164,147,0.7); } 70% { box-shadow:0 0 0 6px rgba(141,164,147,0); } 100% { box-shadow:0 0 0 0 rgba(141,164,147,0); } }
-            @media (prefers-color-scheme: dark) {
-                .cf-island { background:rgba(30,30,30,0.85); border-color:rgba(255,255,255,0.1); color:#eee; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-                .cf-d-row { border-color:rgba(255,255,255,0.08); }
-                .cf-d-lbl { color:#aaa; }
-                .cf-d-val { color:#fff; }
-            }
-            \`;
-            
-            const style = document.createElement('style');
-            style.innerHTML = css;
-            document.head.appendChild(style);
-
-            const shows = ${JSON.stringify(conf.shows || {pv:true, uv:true, online:true, geo:true, dev:true})};
-            let bodyHtml = '';
-            if(shows.pv) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">总访问量</span><span class="cf-d-val">\${resData.pv}</span></div>\`;
-            if(shows.uv) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">独立访客</span><span class="cf-d-val">\${resData.uv}</span></div>\`;
-            if(shows.geo) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">您的方位</span><span class="cf-d-val">\${resData.geo}</span></div>\`;
-            if(shows.dev) bodyHtml += \`<div class="cf-d-row"><span class="cf-d-lbl">访问终端</span><span class="cf-d-val">\${resData.os}</span></div>\`;
-
-            wrap.innerHTML = \`<div class="cf-island" onclick="this.classList.toggle('expanded')">
-                <div class="cf-island-head"><div class="cf-dot"></div>\${shows.online ? '脉搏 ' + resData.online : '环境检测'}</div>
-                <div class="cf-island-body">\${bodyHtml}</div>
-            </div>\`;
-            
-            document.body.appendChild(wrap);
+        (function() {
+            let reqData = { url: window.location.href, ref: document.referrer, sw: window.screen.width };
+            fetch('${url.origin}/stats?action=track&site=${site}', {
+                method: 'POST', keepalive: true,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqData)
+            }).then(r => r.json()).then(data => {
+                if('${conf.mode}' === 'badge') {
+                    const c = document.getElementById('cf-stat');
+                    if(!c) return;
+                    const bg = '${conf.theme}' === 'dark' ? '#111827' : '#ffffff';
+                    const tc = '${conf.theme}' === 'dark' ? '#ededed' : '#333333';
+                    const bc = '${conf.theme}' === 'dark' ? '#333' : '#eaeaea';
+                    c.innerHTML = \`<div style="display:inline-flex; align-items:center; gap:8px; background:\${bg}; border:1px solid \${bc}; padding:6px 12px; border-radius:20px; font-family:system-ui,-apple-system,sans-serif; font-size:12px; color:\${tc}; box-shadow:0 2px 8px rgba(0,0,0,0.04);"><span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow:0 0 6px #10b981;"></span>在线 \${data.online} <span style="color:#888; margin:0 4px;">|</span> 累计 \${data.pv}</div>\`;
+                }
+            }).catch(e=>{});
         })();`;
         return new Response(trackerJs, { headers: { "Content-Type": "application/javascript", ...corsHeaders } });
     }
@@ -142,43 +100,62 @@ export async function onRequest(context) {
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
 
     if (action === 'track' && request.method === 'POST') {
-        let reqData = { ref: '' };
+        let reqData = { url: '', ref: '', sw: 1024 };
         try { reqData = await request.json(); } catch(e) {}
 
         const ua = request.headers.get('user-agent') || '';
-        let os = '未知设备';
+        let os = '未知';
         if (/windows/i.test(ua)) os = 'Windows';
-        else if (/mac os/i.test(ua)) os = 'macOS';
+        else if (/macintosh|mac os x/i.test(ua)) os = 'macOS';
         else if (/android/i.test(ua)) os = 'Android';
         else if (/iphone|ipad/i.test(ua)) os = 'iOS';
+        else if (/linux/i.test(ua)) os = 'Linux';
+
+        let browser = '未知';
+        if (/micromessenger/i.test(ua)) browser = 'WeChat';
+        else if (/edg/i.test(ua)) browser = 'Edge';
+        else if (/chrome|crios/i.test(ua)) browser = 'Chrome';
+        else if (/safari/i.test(ua)) browser = 'Safari';
+        else if (/firefox|fxios/i.test(ua)) browser = 'Firefox';
+
+        const dev = (reqData.sw < 768 || /mobile/i.test(ua)) ? 'Mobile' : 'Desktop';
+        const geo = request.cf && request.cf.country ? request.cf.country : '未知';
+        
+        let path = '/';
+        try { path = new URL(reqData.url).pathname; } catch(e) {}
         
         let refDomain = '直接访问';
         if (reqData.ref) {
-            try { refDomain = new URL(reqData.ref).hostname; } catch(e) {}
+            try { 
+                const rUrl = new URL(reqData.ref);
+                if (rUrl.hostname !== new URL(reqData.url || 'http://a.com').hostname) {
+                    refDomain = rUrl.hostname;
+                }
+            } catch(e) {}
         }
-
-        const geo = request.cf && request.cf.country ? request.cf.country : '未知';
 
         const k_daily = `s_${site}_d_${dateStr}`;
         const k_total = `s_${site}_t`;
         const k_online = `s_${site}_p_${ip}`;
 
-        let [dailyStr, totalStr] = await Promise.all([
-            env.stat.get(k_daily),
-            env.stat.get(k_total)
-        ]);
+        let [dailyStr, totalStr] = await Promise.all([ env.stat.get(k_daily), env.stat.get(k_total) ]);
 
-        let daily = dailyStr ? JSON.parse(dailyStr) : { pv:0, uv:0, ips:[], os:{}, ref:{} };
+        let daily = dailyStr ? JSON.parse(dailyStr) : { pv:0, uv:0, ips:[], os:{}, br:{}, dev:{}, geo:{}, path:{}, ref:{} };
         let total = totalStr ? JSON.parse(totalStr) : { pv:0, uv:0, ips:[] };
 
         daily.pv++;
         total.pv++;
+        
+        daily.path[path] = (daily.path[path] || 0) + 1;
+        daily.ref[refDomain] = (daily.ref[refDomain] || 0) + 1;
 
         if (!daily.ips.includes(ip)) {
             daily.uv++;
             daily.ips.push(ip);
             daily.os[os] = (daily.os[os] || 0) + 1;
-            daily.ref[refDomain] = (daily.ref[refDomain] || 0) + 1;
+            daily.br[browser] = (daily.br[browser] || 0) + 1;
+            daily.dev[dev] = (daily.dev[dev] || 0) + 1;
+            daily.geo[geo] = (daily.geo[geo] || 0) + 1;
         }
 
         if (!total.ips.includes(ip)) {
@@ -197,14 +174,10 @@ export async function onRequest(context) {
         const listed = await env.stat.list({ prefix: `s_${site}_p_` });
         const onlineCount = listed.keys.length || 1;
 
-        return new Response(JSON.stringify({ 
-            pv: total.pv, uv: total.uv, dpv: daily.pv, duv: daily.uv, 
-            online: onlineCount, geo: geo, os: os 
-        }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify({ pv: total.pv, online: onlineCount }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
     if (action === 'get_dashboard') {
-        const listed = await env.stat.list({ prefix: 's_' });
         let result = { total: { pv:0, uv:0 }, sites: {} };
         const siteIds = Object.keys(allConfigs);
 
@@ -213,14 +186,13 @@ export async function onRequest(context) {
             let dailyStr = await env.stat.get(`s_${s}_d_${dateStr}`);
             
             let t = totalStr ? JSON.parse(totalStr) : {pv:0, uv:0};
-            let d = dailyStr ? JSON.parse(dailyStr) : {pv:0, uv:0, os:{}, ref:{}};
+            let d = dailyStr ? JSON.parse(dailyStr) : {pv:0, uv:0, os:{}, br:{}, dev:{}, geo:{}, path:{}, ref:{}};
             
             let onlineList = await env.stat.list({ prefix: `s_${s}_p_` });
             
             result.sites[s] = {
-                pv: t.pv, uv: t.uv, dpv: d.pv, duv: d.uv, 
-                online: onlineList.keys.length,
-                os: d.os, ref: d.ref
+                pv: t.pv, uv: t.uv, dpv: d.pv, duv: d.uv, online: onlineList.keys.length,
+                os: d.os, br: d.br, dev: d.dev, geo: d.geo, path: d.path, ref: d.ref
             };
             result.total.pv += t.pv;
             result.total.uv += t.uv;
