@@ -78,7 +78,17 @@ export async function onRequest(context) {
             4: { bg: '#f5f0ef', border: '#ece5e3', val: '#bca39f', lbl: '#a5acaa' },
             5: { bg: '#f2f5f6', border: '#e8edf0', val: '#7f93a1', lbl: '#a5acaa' },
             6: { bg: '#fafafa', border: '#333333', val: '#333333', lbl: '#666666' },
-            10: { bg: 'transparent', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' }
+            10: { bg: 'transparent', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' },
+            11: { bg: '#1a1a1a', border: '#33ff00', val: '#33ff00', lbl: '#00cc00' },
+            12: { bg: '#000000', border: '#4af626', val: '#4af626', lbl: '#28a745' },
+            13: { bg: '#f3ece7', border: '#dccdc3', val: '#5c4033', lbl: '#8b7355' },
+            14: { bg: '#0b1d3a', border: '#1e3f66', val: '#82b1ff', lbl: '#4a7abc' },
+            15: { bg: '#fff0e6', border: '#ffdcb3', val: '#ff7f50', lbl: '#ff9966' },
+            16: { bg: '#1e3323', border: '#2d4c34', val: '#a8d5ba', lbl: '#7eb08c' },
+            17: { bg: '#fff0f5', border: '#ffb6c1', val: '#ff69b4', lbl: '#ffc0cb' },
+            18: { bg: '#f8f8ff', border: '#e6e6fa', val: '#9370db', lbl: '#b0c4de' },
+            19: { bg: '#fff5ee', border: '#ffdab9', val: '#ff4500', lbl: '#ffa07a' },
+            20: { bg: '#ffffff', border: '#000000', val: '#000000', lbl: '#000000' }
         };
         const t = templates[conf.tpl || 1] || templates[1];
 
