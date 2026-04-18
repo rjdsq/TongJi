@@ -51,13 +51,18 @@
         input[type="text"], input[type="password"], select.native-select { width: 100%; background: var(--card); border: 1px solid var(--border); height: 48px; padding: 0 16px; border-radius: 12px; font-size: 15px; color: var(--text-m); outline: none; -webkit-appearance: none; }
         input:focus, select.native-select:focus { border-color: var(--primary); }
         
-        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; height: 40px; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; height: 40px; margin: 0; padding: 0;}
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--primary); margin-top: -10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: var(--border); border-radius: 2px; }
         
         .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--card); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
         .toggle-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-m); }
         input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-color: var(--primary); }
+
+        .color-picker-wrap { display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); padding:10px 14px; border-radius:12px; font-size:14px; }
+        .color-picker-wrap input[type="color"] { border:none; width:30px; height:30px; border-radius:50%; padding:0; cursor:pointer; background:transparent; }
+        .color-picker-wrap input[type="color"]::-webkit-color-swatch-wrapper { padding:0; }
+        .color-picker-wrap input[type="color"]::-webkit-color-swatch { border:none; border-radius:50%; }
 
         .sort-list { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 8px; }
         .sort-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--bg); font-size: 14px; }
@@ -79,7 +84,7 @@
         
         .code-preview { background: var(--bg); border: 1px solid var(--border); padding: 16px; border-radius: 12px; font-family: monospace; font-size: 13px; word-break: break-all; text-align: left; color: var(--text-m); max-height: 120px; overflow-y: auto; margin-bottom: 12px; }
         
-        .live-preview-box { background: var(--card); border: 1px dashed var(--primary); border-radius: 16px; padding: 20px 10px; margin-bottom: 20px; min-height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .live-preview-box { background: var(--card); border: 1px dashed var(--primary); border-radius: 16px; padding: 20px 10px; margin-bottom: 20px; min-height: 90px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         
         .toast { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 14px 28px; border-radius: 14px; font-size: 15px; display: none; z-index: 200; font-weight: 500; white-space: nowrap; }
     </style>
@@ -87,14 +92,14 @@
 <body>
 
     <div class="header" id="header-bar" style="display:none;">
-        <div class="btn-back" id="btn-back" onclick="closeEdit()">＜ 返回</div>
+        <div class="btn-back" id="btn-back" onclick="handleBackBtn()">＜ 返回</div>
         <span id="sys-title">网站管理</span>
     </div>
 
     <div id="view-login" class="view">
         <div class="card" style="width:100%; max-width:340px;">
             <div class="card-header" style="text-align:center; font-size:20px;">系统登录</div>
-            <div class="form-group"><input type="password" id="login-pwd" placeholder="请输入系统密码"></div>
+            <div class="form-group"><input type="text" id="login-pwd" placeholder="请输入系统密码" style="-webkit-text-security:disc;"></div>
             <div class="form-group toggle-item" style="justify-content:center; margin-bottom:20px;">
                 <input type="checkbox" id="login-rem" checked> <label for="login-rem">记住密码，下次自动登录</label>
             </div>
@@ -147,50 +152,59 @@
                 <div class="live-preview-box" id="live-preview-container"></div>
 
                 <div class="form-group">
-                    <div class="label">自由缩放大小</div>
-                    <input type="range" id="e-scale" min="0.5" max="1" step="0.05" oninput="updatePreview()">
+                    <div class="label">展示模板选择</div>
+                    <select id="e-tpl-select" class="native-select" onchange="updatePreview()">
+                        <option value="1">燕麦暖色</option>
+                        <option value="2">纯白经典</option>
+                        <option value="3">灰绿冷调</option>
+                        <option value="4">藕荷粉黛</option>
+                        <option value="5">雾霾灰蓝</option>
+                        <option value="6">暗影极黑</option>
+                        <option value="7">黑武士</option>
+                        <option value="8">粉霜初绽</option>
+                        <option value="9">森系留白</option>
+                        <option value="10">隐形无框</option>
+                        <option value="11">霓虹幻影</option>
+                        <option value="12">极客黑客</option>
+                        <option value="13">咖啡醇香</option>
+                        <option value="14">深海幽蓝</option>
+                        <option value="15">落日余晖</option>
+                        <option value="16">森林秘境</option>
+                        <option value="17">樱落柔情</option>
+                        <option value="18">薰衣草紫</option>
+                        <option value="19">珊瑚橘暖</option>
+                        <option value="20">极致极简</option>
+                    </select>
                 </div>
 
-                <div class="form-group toggle-group" style="grid-template-columns:1fr 1fr; margin-bottom:24px;">
+                <div class="form-group toggle-item" style="margin-bottom:15px;">
+                    <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="e-use-custom" onchange="updatePreview()"> 启用自定义配色 (覆盖模板)</label>
+                </div>
+
+                <div id="custom-color-panel" style="display:none; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+                    <div class="color-picker-wrap"><span>数据大框</span><input type="color" id="c-box" value="#transparent" oninput="updatePreview()"></div>
+                    <div class="color-picker-wrap"><span>数据小框</span><input type="color" id="c-item" value="#ffffff" oninput="updatePreview()"></div>
+                    <div class="color-picker-wrap"><span>字体色</span><input type="color" id="c-lbl" value="#a5acaa" oninput="updatePreview()"></div>
+                    <div class="color-picker-wrap"><span>动态色</span><input type="color" id="c-val" value="#788583" oninput="updatePreview()"></div>
+                </div>
+
+                <div class="label">自由调整排列与偏移</div>
+                <div class="form-group toggle-group" style="grid-template-columns:1fr 1fr; margin-bottom:12px;">
                     <label class="toggle-item" for="ly-row"><input type="radio" id="ly-row" name="e-layout" value="row" onchange="updatePreview()"> 单行并排</label>
                     <label class="toggle-item" for="ly-grid"><input type="radio" id="ly-grid" name="e-layout" value="grid" onchange="updatePreview()"> 双行矩阵</label>
                 </div>
-
-                <div class="label">拖拽改变排列顺序与显隐</div>
-                <div class="sort-list form-group" id="sort-list"></div>
+                <div class="form-group" style="margin-bottom:24px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-l); margin-bottom:5px;"><span>左偏移</span><span>居中</span><span>右偏移</span></div>
+                    <input type="range" id="e-offset" min="-50" max="50" step="1" value="0" oninput="updatePreview()">
+                </div>
 
                 <div class="form-group">
-                    <div class="label">主题风格与对齐</div>
-                    <div style="display:flex; gap:12px;">
-                        <select id="e-tpl-select" class="native-select" style="flex:2;" onchange="updatePreview()">
-                            <option value="1">燕麦暖色</option>
-                            <option value="2">纯白经典</option>
-                            <option value="3">灰绿冷调</option>
-                            <option value="4">藕荷粉黛</option>
-                            <option value="5">雾霾灰蓝</option>
-                            <option value="6">暗影极黑</option>
-                            <option value="7">黑武士</option>
-                            <option value="8">粉霜初绽</option>
-                            <option value="9">森系留白</option>
-                            <option value="10">隐形无框</option>
-                            <option value="11">霓虹幻影</option>
-                            <option value="12">极客黑客</option>
-                            <option value="13">咖啡醇香</option>
-                            <option value="14">深海幽蓝</option>
-                            <option value="15">落日余晖</option>
-                            <option value="16">森林秘境</option>
-                            <option value="17">樱落柔情</option>
-                            <option value="18">薰衣草紫</option>
-                            <option value="19">珊瑚橘暖</option>
-                            <option value="20">极致极简</option>
-                        </select>
-                        <select id="e-align" class="native-select" style="flex:1;" onchange="updatePreview()">
-                            <option value="left">居左</option>
-                            <option value="center">居中</option>
-                            <option value="right">居右</option>
-                        </select>
-                    </div>
+                    <div class="label">整体尺寸比例缩放</div>
+                    <input type="range" id="e-scale" min="0.5" max="1" step="0.05" value="1" oninput="updatePreview()">
                 </div>
+
+                <div class="label">拖拽改变模块顺序与显隐</div>
+                <div class="sort-list form-group" id="sort-list"></div>
 
                 <div class="label" style="margin-top:24px;">修改展示文案</div>
                 <div style="display:flex; gap:12px;">
@@ -246,27 +260,31 @@
         
         const keyMap = { pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客' };
         const tplDict = {
-            1: { bg: '#f9f7f2', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' },
-            2: { bg: '#ffffff', border: '#f4f1eb', val: '#5c5c5c', lbl: '#a0b5a6' },
-            3: { bg: '#eef0ed', border: '#eef0ed', val: '#8da493', lbl: '#788583' },
-            4: { bg: '#f5f0ef', border: '#ece5e3', val: '#bca39f', lbl: '#a5acaa' },
-            5: { bg: '#f2f5f6', border: '#e8edf0', val: '#7f93a1', lbl: '#a5acaa' },
-            6: { bg: '#fafafa', border: '#333333', val: '#333333', lbl: '#666666' },
-            7: { bg: '#333333', border: '#333333', val: '#f9f7f2', lbl: '#a5acaa' },
-            8: { bg: '#f9f9f9', border: '#d0b8b4', val: '#d0b8b4', lbl: '#a5acaa' },
-            9: { bg: '#ffffff', border: '#a0b5a6', val: '#a0b5a6', lbl: '#a5acaa' },
-            10: { bg: 'transparent', border: 'transparent', val: '#788583', lbl: '#a5acaa' },
-            11: { bg: '#121212', border: '#00ffcc', val: '#00ffcc', lbl: '#009999' },
-            12: { bg: '#000000', border: '#39ff14', val: '#39ff14', lbl: '#228b22' },
-            13: { bg: '#f4ece6', border: '#e2d3c8', val: '#5c4033', lbl: '#8b7355' },
-            14: { bg: '#0a192f', border: '#172a45', val: '#64ffda', lbl: '#8892b0' },
-            15: { bg: '#fff0e6', border: '#ffdcb3', val: '#ff7f50', lbl: '#ff9966' },
-            16: { bg: '#1b2a22', border: '#253e30', val: '#a8d5ba', lbl: '#7eb08c' },
-            17: { bg: '#fff0f5', border: '#ffb6c1', val: '#ff69b4', lbl: '#ffc0cb' },
-            18: { bg: '#f8f8ff', border: '#e6e6fa', val: '#9370db', lbl: '#b0c4de' },
-            19: { bg: '#fff5ee', border: '#ffdab9', val: '#ff4500', lbl: '#ffa07a' },
-            20: { bg: '#ffffff', border: '#000000', val: '#000000', lbl: '#000000' }
+            1: { box: 'transparent', bg: '#f9f7f2', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' },
+            2: { box: 'transparent', bg: '#ffffff', border: '#f4f1eb', val: '#5c5c5c', lbl: '#a0b5a6' },
+            3: { box: 'transparent', bg: '#eef0ed', border: '#eef0ed', val: '#8da493', lbl: '#788583' },
+            4: { box: 'transparent', bg: '#f5f0ef', border: '#ece5e3', val: '#bca39f', lbl: '#a5acaa' },
+            5: { box: 'transparent', bg: '#f2f5f6', border: '#e8edf0', val: '#7f93a1', lbl: '#a5acaa' },
+            6: { box: 'transparent', bg: '#fafafa', border: '#333333', val: '#333333', lbl: '#666666' },
+            7: { box: 'transparent', bg: '#333333', border: '#333333', val: '#f9f7f2', lbl: '#a5acaa' },
+            8: { box: 'transparent', bg: '#f9f9f9', border: '#d0b8b4', val: '#d0b8b4', lbl: '#a5acaa' },
+            9: { box: 'transparent', bg: '#ffffff', border: '#a0b5a6', val: '#a0b5a6', lbl: '#a5acaa' },
+            10: { box: 'transparent', bg: 'transparent', border: 'transparent', val: '#788583', lbl: '#a5acaa' },
+            11: { box: 'transparent', bg: '#121212', border: '#00ffcc', val: '#00ffcc', lbl: '#009999' },
+            12: { box: 'transparent', bg: '#000000', border: '#39ff14', val: '#39ff14', lbl: '#228b22' },
+            13: { box: 'transparent', bg: '#f4ece6', border: '#e2d3c8', val: '#5c4033', lbl: '#8b7355' },
+            14: { box: 'transparent', bg: '#0a192f', border: '#172a45', val: '#64ffda', lbl: '#8892b0' },
+            15: { box: 'transparent', bg: '#fff0e6', border: '#ffdcb3', val: '#ff7f50', lbl: '#ff9966' },
+            16: { box: 'transparent', bg: '#1b2a22', border: '#253e30', val: '#a8d5ba', lbl: '#7eb08c' },
+            17: { box: 'transparent', bg: '#fff0f5', border: '#ffb6c1', val: '#ff69b4', lbl: '#ffc0cb' },
+            18: { box: 'transparent', bg: '#f8f8ff', border: '#e6e6fa', val: '#9370db', lbl: '#b0c4de' },
+            19: { box: 'transparent', bg: '#fff5ee', border: '#ffdab9', val: '#ff4500', lbl: '#ffa07a' },
+            20: { box: 'transparent', bg: '#ffffff', border: '#000000', val: '#000000', lbl: '#000000' }
         };
+
+        window.addEventListener('popstate', (e) => {
+            if (isEditOpen) closeEdit(true);
+        });
 
         function showToast(msg, ms=1500) {
             const t = document.getElementById('toast');
@@ -279,11 +297,8 @@
             document.getElementById('md-title').innerText = title;
             const mdBody = document.getElementById('md-body');
             mdBody.innerHTML = '';
-            if (typeof bodyContent === 'string') {
-                mdBody.innerHTML = bodyContent;
-            } else {
-                mdBody.appendChild(bodyContent);
-            }
+            if (typeof bodyContent === 'string') mdBody.innerHTML = bodyContent;
+            else mdBody.appendChild(bodyContent);
             document.getElementById('md-actions').innerHTML = actionsHtml;
             document.getElementById('overlay').style.display = 'flex';
             setTimeout(() => document.getElementById('modal').classList.add('show'), 10);
@@ -345,11 +360,9 @@
             const pwd = document.getElementById('login-pwd').value;
             const rem = document.getElementById('login-rem').checked;
             if(!pwd) return showToast('请输入密码');
-            
             showToast('验证中...', 1000);
             const res = await fetch('/stats?action=login', { method: 'POST', body: JSON.stringify({pwd}) });
             const data = await res.json();
-            
             if (data.ok) {
                 if (rem) localStorage.setItem('sys_pwd', pwd);
                 initApp();
@@ -367,10 +380,8 @@
             const pwd = document.getElementById('sys-pwd').value.trim();
             document.getElementById('sys-pwd').value = pwd; 
             const rem = document.getElementById('sys-rem-checkbox').checked;
-            
             showToast('正在保存...');
             await fetch('/stats?action=save_sys', { method: 'POST', body: JSON.stringify({pwd}) });
-            
             if (pwd) {
                 sysHasPwd = true;
                 document.getElementById('sec-logout').style.display = 'flex';
@@ -381,6 +392,7 @@
                 document.getElementById('sec-logout').style.display = 'none';
                 localStorage.removeItem('sys_pwd');
             }
+            updateSysUI();
             showToast('安全设置已保存');
         }
 
@@ -399,13 +411,11 @@
         async function initApp() {
             const savedPwd = localStorage.getItem('sys_pwd') || '';
             document.getElementById('sys-pwd').value = savedPwd;
-            if(savedPwd) document.getElementById('sec-rem-pwd').style.display = 'flex';
-            
+            handleSysPwdInput();
             document.getElementById('view-login').style.display = 'none';
             document.getElementById('header-bar').style.display = 'flex';
             document.getElementById('main-container').style.display = 'block';
             document.getElementById('nav-bar').style.display = 'flex';
-            
             const res = await fetch('/stats?action=get_configs');
             configs = await res.json();
             renderSites();
@@ -423,15 +433,12 @@
                 card.querySelector('.site-domain').innerText = site;
                 list.appendChild(card);
             }
-            if (Object.keys(configs).length === 0) {
-                list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:50px; line-height:1.8;">还没有添加网站<br>点击右下角按钮添加</div>';
-            }
+            if (Object.keys(configs).length === 0) list.innerHTML = '<div style="text-align:center; color:var(--text-l); margin-top:50px; line-height:1.8;">还没有添加网站<br>点击右下角按钮添加</div>';
         }
 
         async function loadAllStats() {
             const res = await fetch('/stats?action=get_all_stats');
             allStatsData = await res.json();
-            
             let optionsHtml = '<option value="all">👑 全站汇总</option>';
             for (let site in allStatsData.sites) optionsHtml += `<option value="${site}">数据源: ${site}</option>`;
             document.getElementById('stat-selector').innerHTML = optionsHtml;
@@ -457,6 +464,7 @@
 
         function showAddSiteModal() {
             openModal('添加网站', `<input type="text" id="new-site-input" placeholder="输入名称" style="margin-top:10px;">`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="confirmAddSite()">确认</button>`);
+            setTimeout(() => document.getElementById('new-site-input')?.focus(), 300);
         }
 
         async function confirmAddSite() {
@@ -464,7 +472,11 @@
             if (!site || configs[site]) return showToast('无效或重复');
             closeModal();
             showToast('添加中...');
-            configs[site] = { tpl: 1, scale: 1, align: 'center', layout: 'row', order: ['pv','uv','dpv','duv'], pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
+            configs[site] = { 
+                tpl: 1, scale: 1, offsetX: 0, layout: 'row', 
+                useCustom: false, colors: { box: 'transparent', item: '#f9f7f2', lbl: '#a5acaa', val: '#788583' },
+                order: ['pv','uv','dpv','duv'], pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} 
+            };
             await fetch('/stats?action=save_config', { method: 'POST', body: JSON.stringify({site: site, ...configs[site]}) });
             renderSites();
             openEdit(site);
@@ -503,27 +515,41 @@
         }
 
         function updatePreview() {
-            const tplId = document.getElementById('e-tpl-select').value;
-            const t = tplDict[tplId] || tplDict[1];
-            const align = document.getElementById('e-align').value;
-            const jc = align === 'left' ? 'flex-start' : (align === 'right' ? 'flex-end' : 'center');
+            const useCustom = document.getElementById('e-use-custom').checked;
+            document.getElementById('custom-color-panel').style.display = useCustom ? 'grid' : 'none';
+            
+            let t;
+            if (useCustom) {
+                t = { 
+                    box: document.getElementById('c-box').value, 
+                    bg: document.getElementById('c-item').value, 
+                    border: 'transparent', 
+                    lbl: document.getElementById('c-lbl').value, 
+                    val: document.getElementById('c-val').value 
+                };
+            } else {
+                const tplId = document.getElementById('e-tpl-select').value;
+                t = tplDict[tplId] || tplDict[1];
+            }
+
+            const offsetX = document.getElementById('e-offset').value;
             const scale = parseFloat(document.getElementById('e-scale').value);
             const baseSize = 14 * scale;
             
             const layoutNode = document.querySelector('input[name="e-layout"]:checked');
-            const layout = layoutNode ? layoutNode.value : 'row';
-            const isGrid = layout === 'grid';
+            const isGrid = layoutNode && layoutNode.value === 'grid';
             
             const names = { pv: document.getElementById('e-v-pv').value, uv: document.getElementById('e-v-uv').value, dpv: document.getElementById('e-v-dpv').value, duv: document.getElementById('e-v-duv').value };
             
             let items = [];
             currentOrder.forEach(k => {
                 if(document.getElementById(`e-t-${k}`).checked) {
-                    items.push(`<div style="flex: 1 1 ${isGrid?'calc(50% - 6px)':'auto'}; min-width:40px; background:${t.bg}; padding:0.6em 0.8em; border-radius:0.6em; border:1px solid ${t.border}; box-sizing:border-box;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${names[k]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">888</div></div>`);
+                    items.push(`<div style="flex: 0 0 ${isGrid?'calc(50% - 4px)':'auto'}; min-width:50px; background:${t.bg}; padding:0.6em 0.8em; border-radius:0.6em; border:1px solid ${t.border}; box-sizing:border-box; text-align:center;"><div style="font-size:0.75em; color:${t.lbl}; margin-bottom:0.3em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${names[k]}</div><div style="font-size:1.15em; color:${t.val}; font-weight:600;">888</div></div>`);
                 }
             });
 
-            document.getElementById('live-preview-container').innerHTML = `<div style="display:flex; flex-wrap:${isGrid?'wrap':'nowrap'}; gap:8px; width:100%; justify-content:${jc}; text-align:center; font-family:-apple-system,sans-serif; font-size:${baseSize}px; line-height:1;">${items.join('')}</div>`;
+            const paddingBox = t.box && t.box !== 'transparent' ? 'padding:0.6em; border-radius:0.8em;' : '';
+            document.getElementById('live-preview-container').innerHTML = `<div style="display:flex; justify-content:center; width:100%;"><div style="display:flex; flex-wrap:${isGrid?'wrap':'nowrap'}; gap:8px; justify-content:center; background:${t.box}; ${paddingBox} transform:translateX(${offsetX}%); font-family:-apple-system,sans-serif; font-size:${baseSize}px; line-height:1; width:max-content; max-width:100%; box-sizing:border-box;">${items.join('')}</div></div>`;
             checkChanges();
         }
 
@@ -535,8 +561,10 @@
             const currObj = {
                 tpl: parseInt(document.getElementById('e-tpl-select').value) || 1,
                 scale: parseFloat(document.getElementById('e-scale').value) || 1,
-                align: document.getElementById('e-align').value || 'center',
+                offsetX: parseInt(document.getElementById('e-offset').value) || 0,
                 layout: layoutNode ? layoutNode.value : 'row',
+                useCustom: document.getElementById('e-use-custom').checked,
+                colors: { box: document.getElementById('c-box').value, item: document.getElementById('c-item').value, lbl: document.getElementById('c-lbl').value, val: document.getElementById('c-val').value },
                 order: currentOrder,
                 pv: document.getElementById('e-v-pv').value,
                 uv: document.getElementById('e-v-uv').value,
@@ -559,60 +587,75 @@
         }
 
         function openEdit(site) {
-            const c = configs[site] || {};
-            document.getElementById('e-site-id').value = site;
-            
-            currentOrder = Array.isArray(c.order) ? [...c.order] : ['pv','uv','dpv','duv'];
-            const shows = c.shows || {pv:true, uv:true, dpv:true, duv:true};
-            
-            document.getElementById('e-t-pv').checked = !!shows.pv;
-            document.getElementById('e-t-uv').checked = !!shows.uv;
-            document.getElementById('e-t-dpv').checked = !!shows.dpv;
-            document.getElementById('e-t-duv').checked = !!shows.duv;
-            
-            document.getElementById('e-align').value = c.align || 'center';
-            document.getElementById('e-scale').value = c.scale || 1;
-            document.getElementById('e-tpl-select').value = c.tpl || 1;
-            
-            const layoutRadios = document.getElementsByName('e-layout');
-            for(let r of layoutRadios) { if(r.value === (c.layout || 'row')) r.checked = true; }
+            try {
+                const c = configs[site] || {};
+                document.getElementById('e-site-id').value = site;
+                
+                currentOrder = Array.isArray(c.order) ? [...c.order] : ['pv','uv','dpv','duv'];
+                const shows = c.shows || {pv:true, uv:true, dpv:true, duv:true};
+                
+                document.getElementById('e-t-pv').checked = !!shows.pv;
+                document.getElementById('e-t-uv').checked = !!shows.uv;
+                document.getElementById('e-t-dpv').checked = !!shows.dpv;
+                document.getElementById('e-t-duv').checked = !!shows.duv;
+                
+                document.getElementById('e-offset').value = c.offsetX || 0;
+                document.getElementById('e-scale').value = c.scale || 1;
+                document.getElementById('e-tpl-select').value = c.tpl || 1;
+                
+                document.getElementById('e-use-custom').checked = !!c.useCustom;
+                const colors = c.colors || { box: 'transparent', item: '#f9f7f2', lbl: '#a5acaa', val: '#788583' };
+                document.getElementById('c-box').value = colors.box !== 'transparent' ? colors.box : '#ffffff';
+                document.getElementById('c-item').value = colors.item;
+                document.getElementById('c-lbl').value = colors.lbl;
+                document.getElementById('c-val').value = colors.val;
 
-            document.getElementById('e-v-pv').value = c.pv || '总访问';
-            document.getElementById('e-v-uv').value = c.uv || '总访客';
-            document.getElementById('e-v-dpv').value = c.dpv || '今日访问';
-            document.getElementById('e-v-duv').value = c.duv || '今日访客';
+                const layoutRadios = document.getElementsByName('e-layout');
+                for(let r of layoutRadios) { if(r.value === (c.layout || 'row')) r.checked = true; }
 
-            renderSortList();
-            
-            const currentLayoutNode = document.querySelector('input[name="e-layout"]:checked');
-            const currObj = {
-                tpl: parseInt(document.getElementById('e-tpl-select').value) || 1,
-                scale: parseFloat(document.getElementById('e-scale').value) || 1,
-                align: document.getElementById('e-align').value || 'center',
-                layout: currentLayoutNode ? currentLayoutNode.value : 'row',
-                order: currentOrder,
-                pv: document.getElementById('e-v-pv').value,
-                uv: document.getElementById('e-v-uv').value,
-                dpv: document.getElementById('e-v-dpv').value,
-                duv: document.getElementById('e-v-duv').value,
-                shows: { pv: !!shows.pv, uv: !!shows.uv, dpv: !!shows.dpv, duv: !!shows.duv }
-            };
-            currentOriginalConfigStr = JSON.stringify(currObj);
-            checkChanges();
+                document.getElementById('e-v-pv').value = c.pv || '总访问';
+                document.getElementById('e-v-uv').value = c.uv || '总访客';
+                document.getElementById('e-v-dpv').value = c.dpv || '今日访问';
+                document.getElementById('e-v-duv').value = c.duv || '今日访客';
 
-            document.getElementById('btn-back').style.display = 'flex';
-            document.getElementById('fab-add').style.display = 'none';
-            document.getElementById('view-edit').classList.add('show');
-            isEditOpen = true;
+                renderSortList();
+                
+                const currentLayoutNode = document.querySelector('input[name="e-layout"]:checked');
+                const currObj = {
+                    tpl: parseInt(document.getElementById('e-tpl-select').value) || 1,
+                    scale: parseFloat(document.getElementById('e-scale').value) || 1,
+                    offsetX: parseInt(document.getElementById('e-offset').value) || 0,
+                    layout: currentLayoutNode ? currentLayoutNode.value : 'row',
+                    useCustom: !!c.useCustom,
+                    colors: colors,
+                    order: currentOrder,
+                    pv: document.getElementById('e-v-pv').value,
+                    uv: document.getElementById('e-v-uv').value,
+                    dpv: document.getElementById('e-v-dpv').value,
+                    duv: document.getElementById('e-v-duv').value,
+                    shows: { pv: !!shows.pv, uv: !!shows.uv, dpv: !!shows.dpv, duv: !!shows.duv }
+                };
+                currentOriginalConfigStr = JSON.stringify(currObj);
+                checkChanges();
+
+                document.getElementById('btn-back').style.display = 'flex';
+                document.getElementById('fab-add').style.display = 'none';
+                document.getElementById('view-edit').classList.add('show');
+                isEditOpen = true;
+                try { history.pushState({view: 'edit'}, ''); } catch(e) {}
+            } catch (e) {
+                showToast('读取配置失败');
+            }
         }
 
-        function handleBackBtn() { closeEdit(); }
+        function handleBackBtn() { if (isEditOpen) history.back(); }
 
-        function closeEdit() {
+        function closeEdit(fromPop = false) {
             document.getElementById('view-edit').classList.remove('show');
             document.getElementById('btn-back').style.display = 'none';
             document.getElementById('fab-add').style.display = 'flex';
             isEditOpen = false;
+            if(!fromPop) history.back();
         }
 
         async function saveEdit() {
@@ -621,8 +664,10 @@
             configs[site] = {
                 tpl: parseInt(document.getElementById('e-tpl-select').value),
                 scale: parseFloat(document.getElementById('e-scale').value),
-                align: document.getElementById('e-align').value,
+                offsetX: parseInt(document.getElementById('e-offset').value),
                 layout: layoutNode ? layoutNode.value : 'row',
+                useCustom: document.getElementById('e-use-custom').checked,
+                colors: { box: document.getElementById('c-box').value, item: document.getElementById('c-item').value, lbl: document.getElementById('c-lbl').value, val: document.getElementById('c-val').value },
                 order: [...currentOrder],
                 pv: document.getElementById('e-v-pv').value,
                 uv: document.getElementById('e-v-uv').value,
