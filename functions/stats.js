@@ -70,7 +70,7 @@ export async function onRequest(context) {
     }
 
     if (action === 'script') {
-        const conf = allConfigs[site] || { tpl: 1, size: 3, align: 'center', pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
+        const conf = allConfigs[site] || { tpl: 1, size: 1, align: 'center', pv: '总访问', uv: '总访客', dpv: '今日访问', duv: '今日访客', shows: {pv:true, uv:true, dpv:true, duv:true} };
         
         const templates = {
             1: { bg: '#f9f7f2', border: '#ece9e0', val: '#788583', lbl: '#a5acaa' },
@@ -87,7 +87,7 @@ export async function onRequest(context) {
             2: { p: '12px 16px', v: '18px', l: '11px' },
             3: { p: '16px 20px', v: '22px', l: '12px' }
         };
-        const s = sizes[conf.size || 3] || sizes[3];
+        const s = sizes[conf.size || 1] || sizes[1];
 
         const aligns = { left: 'flex-start', center: 'center', right: 'flex-end' };
         const jc = aligns[conf.align || 'center'] || 'center';
