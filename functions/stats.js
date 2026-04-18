@@ -40,8 +40,9 @@ export async function onRequest(context) {
     let allConfigs = configStr ? JSON.parse(configStr) : {};
 
     if (action === 'clear_all' && request.method === 'POST') {
-        await env.stat.put(k_config, JSON.stringify({}));
-        await env.stat.delete('sys_pwd');
+        const listed = await env.stat.list();
+        const tasks = listed.keys.map(k => env.stat.delete(k.name));
+        await Promise.all(tasks);
         return new Response(JSON.stringify({ status: "ok" }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
@@ -64,7 +65,12 @@ export async function onRequest(context) {
         try { data = await request.json(); } catch(e) {}
         if (data.site && allConfigs[data.site]) {
             delete allConfigs[data.site];
-            await env.stat.put(k_config, JSON.stringify(allConfigs));
+            const tasks = [env.stat.put(k_config, JSON.stringify(allConfigs))];
+            if (data.erase) {
+                const listed = await env.stat.list({ prefix: `s_${data.site}_` });
+                listed.keys.forEach(k => tasks.push(env.stat.delete(k.name)));
+            }
+            await Promise.all(tasks);
         }
         return new Response(JSON.stringify({status: "ok"}), { headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
@@ -111,6 +117,8 @@ export async function onRequest(context) {
         const itemWidth = isGrid ? 'calc(50% - 6px)' : 'auto';
         const flexWrap = isGrid ? 'wrap' : 'nowrap';
 
+        const shows = conf.shows || {pv:true, uv:true, dpv:true, duv:true};
+
         const trackerJs = `
         (async function() {
             const container = document.getElementById('cf-stat');
@@ -122,8 +130,8 @@ export async function onRequest(context) {
                 resData = await response.json();
             } catch(e) { return; }
 
-            const confShows = ${JSON.stringify(conf.shows)};
-            const confNames = {pv: '${conf.pv}', uv: '${conf.uv}', dpv: '${conf.dpv}', duv: '${conf.duv}'};
+            const confShows = ${JSON.stringify(shows)};
+            const confNames = {pv: '${conf.pv || '总访问'}', uv: '${conf.uv || '总访客'}', dpv: '${conf.dpv || '今日访问'}', duv: '${conf.duv || '今日访客'}'};
             const orderArr = ${JSON.stringify(conf.order || ['pv', 'uv', 'dpv', 'duv'])};
             
             let items = [];
